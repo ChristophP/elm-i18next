@@ -1,0 +1,7 @@
+{
+  "hello": "Hello",
+  "gooddaySalute": "Good Day {{name}} {{assi}}",
+  "tigers": {
+    "roar": "Roar!"
+  }
+}
