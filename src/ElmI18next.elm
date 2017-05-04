@@ -5,6 +5,7 @@ module ElmI18Next
         , t
         , fetchTranslations
         , initialTranslations
+        , decodeTranslations
         )
 
 import Dict exposing (Dict)
@@ -35,19 +36,13 @@ initialTranslations =
     Dict.empty
 
 
-decodeTree : Decoder Tree
-decodeTree =
+decodeTranslations : Decoder Tree
+decodeTranslations =
     Decode.oneOf
         [ Decode.string |> Decode.map Leaf
         , Decode.lazy
-            (\_ -> (Decode.dict decodeTree |> Decode.map Branch))
+            (\_ -> (Decode.dict decodeTranslations |> Decode.map Branch))
         ]
-
-
-decodeTranslations : TranslationsJson -> DecodedStuff
-decodeTranslations flags =
-    Decode.decodeValue decodeTree flags
-        |> Result.withDefault (Leaf "OMG")
 
 
 mapDecodedStuffToDict : DecodedStuff -> Translations
@@ -79,9 +74,13 @@ mapDecodedStuffToDict decodedStuff =
                 Dict.empty
 
 
-parseTranslations : TranslationsJson -> Translations
+
+-- function to decode preloaded json value
+
+
+parseTranslations : TranslationsJson -> Result String Translations
 parseTranslations =
-    decodeTranslations >> mapDecodedStuffToDict
+    Decode.decodeValue (Decode.map mapDecodedStuffToDict decodeTranslations)
 
 
 t : Translations -> String -> String
@@ -91,7 +90,7 @@ t translations key =
 
 translationRequest : String -> Request Translations
 translationRequest url =
-    Http.get url (Decode.map mapDecodedStuffToDict decodeTree)
+    Http.get url (Decode.map mapDecodedStuffToDict decodeTranslations)
 
 
 fetchTranslations : (Result Http.Error Translations -> msg) -> String -> Cmd msg
