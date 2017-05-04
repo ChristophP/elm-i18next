@@ -10,12 +10,12 @@ module I18Next
 {-| This library provides a solution to load and display translations in your
 app. It allows you to load json translation files, display the text and
 interpolate placeholders.
-# Definition
-@docs Translations
-# Common Helpers
-@docs fetchTranslations, initialTranslations, t
-# Chaining Maybes
-@docs decodeTranslations
+# Types and Data
+@docs Translations, initialTranslations
+# Using Translations
+@docs t
+# Fetching and Deconding
+@docs fetchTranslations, decodeTranslations
 -}
 
 import Dict exposing (Dict)
@@ -30,7 +30,7 @@ type alias Translations =
     Data.Translations
 
 
-{-| Use this to intialize Translations in your model.
+{-| Use this to initialize Translations in your model.
 -}
 initialTranslations : Translations
 initialTranslations =
