@@ -46,16 +46,21 @@ initialTranslations =
 
 {-| Decode a JSON translations file.
 -}
-decodeTranslations : Decoder Tree
+decodeTranslations : Decoder Translations
 decodeTranslations =
+    Decode.map mapDecodedStuffToDict decodeTree
+
+
+decodeTree : Decoder Tree
+decodeTree =
     Decode.oneOf
         [ Decode.string |> Decode.map Leaf
         , Decode.lazy
-            (\_ -> (Decode.dict decodeTranslations |> Decode.map Branch))
+            (\_ -> (Decode.dict decodeTree |> Decode.map Branch))
         ]
 
 
-mapDecodedStuffToDict : DecodedStuff -> Translations
+mapDecodedStuffToDict : Tree -> Translations
 mapDecodedStuffToDict decodedStuff =
     let
         foldTree =
@@ -81,16 +86,7 @@ mapDecodedStuffToDict decodedStuff =
                 foldTree ( initialTranslations, "" ) dict |> Tuple.first
 
             _ ->
-                Dict.empty
-
-
-
--- function to decode preloaded json value
-
-
-parseTranslations : TranslationsJson -> Result String Translations
-parseTranslations =
-    Decode.decodeValue (Decode.map mapDecodedStuffToDict decodeTranslations)
+                initialTranslations
 
 
 {-| Translate a value at a given string.
@@ -105,7 +101,7 @@ t translations key =
 
 translationRequest : String -> Request Translations
 translationRequest url =
-    Http.get url (Decode.map mapDecodedStuffToDict decodeTranslations)
+    Http.get url decodeTranslations
 
 
 {-| A command to load translation files.
