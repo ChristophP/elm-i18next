@@ -1,7 +1,7 @@
 module Testpage exposing (..)
 
 import Html exposing (program, Html, div, text)
-import ElmI18Next
+import I18Next
     exposing
         ( Translations
         , TranslationsJson

@@ -35,7 +35,7 @@
       },
       {
         "name": "t",
-        "comment": " Translate a value at a given string.\n    -- Use the key.\n    t translations \"labels.greetings.hello\"\n",
+        "comment": " Translate a value at a given string.\n\n    -- Use the key.\n    t translations \"labels.greetings.hello\"\n",
         "type": "ElmI18Next.Translations -> String -> String"
       }
     ],

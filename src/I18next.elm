@@ -1,4 +1,4 @@
-module ElmI18Next
+module I18Next
     exposing
         ( Translations
         , TranslationsJson
@@ -94,6 +94,7 @@ parseTranslations =
 
 
 {-| Translate a value at a given string.
+
     -- Use the key.
     t translations "labels.greetings.hello"
 -}

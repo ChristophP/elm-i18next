@@ -1,7 +1,0 @@
-{
-  "hello": "Hallo",
-  "gooddaySalute": "Guten Tag {{name}} {{assi}}",
-  "tigers": {
-    "roar": "Brüll!"
-  }
-}
