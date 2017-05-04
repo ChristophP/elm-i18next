@@ -9,26 +9,17 @@ module ElmI18Next
         )
 
 import Dict exposing (Dict)
-import Json.Encode
 import Json.Decode as Decode exposing (Decoder)
 import Http exposing (Request)
+import Data exposing (Tree(..), DecodedStuff)
 
 
 type alias Translations =
-    Dict String String
-
-
-type alias DecodedStuff =
-    Tree
+    Data.Translations
 
 
 type alias TranslationsJson =
-    Json.Encode.Value
-
-
-type Tree
-    = Branch (Dict String Tree)
-    | Leaf String
+    Data.TranslationsJson
 
 
 initialTranslations : Translations
@@ -68,7 +59,7 @@ mapDecodedStuffToDict decodedStuff =
     in
         case decodedStuff of
             Branch dict ->
-                foldTree ( Dict.empty, "" ) dict |> Tuple.first
+                foldTree ( initialTranslations, "" ) dict |> Tuple.first
 
             _ ->
                 Dict.empty
