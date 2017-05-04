@@ -1,0 +1,44 @@
+[
+  {
+    "name": "ElmI18Next",
+    "comment": " This library provides a solution to load and display translations in your\napp. It allows you to load json translation files, display the text and\ninterpolate placeholders.\n# Definition\n@docs Translations, TranslationsJson\n# Common Helpers\n@docs fetchTranslations, initialTranslations, t\n# Chaining Maybes\n@docs decodeTranslations\n",
+    "aliases": [
+      {
+        "name": "Translations",
+        "comment": " A type that represents your loaded translations\n",
+        "args": [],
+        "type": "Data.Translations"
+      },
+      {
+        "name": "TranslationsJson",
+        "comment": " A type that represents undecoded Translations\n",
+        "args": [],
+        "type": "Data.TranslationsJson"
+      }
+    ],
+    "types": [],
+    "values": [
+      {
+        "name": "decodeTranslations",
+        "comment": " Decode a JSON translations file.\n",
+        "type": "Json.Decode.Decoder Data.Tree"
+      },
+      {
+        "name": "fetchTranslations",
+        "comment": " A command to load translation files.\n",
+        "type": "(Result.Result Http.Error ElmI18Next.Translations -> msg) -> String -> Platform.Cmd.Cmd msg"
+      },
+      {
+        "name": "initialTranslations",
+        "comment": " Use this to intialize Translations in your model.\n",
+        "type": "ElmI18Next.Translations"
+      },
+      {
+        "name": "t",
+        "comment": " Translate a value at a given string.\n    -- Use the key.\n    t translations \"labels.greetings.hello\"\n",
+        "type": "ElmI18Next.Translations -> String -> String"
+      }
+    ],
+    "generated-with-elm-version": "0.18.0"
+  }
+]
