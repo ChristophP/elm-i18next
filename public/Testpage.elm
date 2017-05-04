@@ -4,7 +4,6 @@ import Html exposing (program, Html, div, text)
 import I18Next
     exposing
         ( Translations
-        , TranslationsJson
         , t
         , fetchTranslations
         , initialTranslations
@@ -41,9 +40,9 @@ view model =
     div
         []
         [ div [] [ text ("Some model " ++ toString model) ]
-        , div [] [ text ("t \"a\" = " ++ t model.translations "a") ]
-        , div [] [ text ("t \"b.c\" = " ++ t model.translations "b.c") ]
-        , div [] [ text ("t \"notExisting\" = " ++ t model.translations "notExisting") ]
+        , div [] [ text ("t \"a\" = " ++ t "a" model.translations) ]
+        , div [] [ text ("t \"b.c\" = " ++ t "b.c" model.translations) ]
+        , div [] [ text ("t \"notExisting\" = " ++ t "notExisting" model.translations) ]
         ]
 
 

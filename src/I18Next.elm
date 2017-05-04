@@ -1,7 +1,6 @@
 module I18Next
     exposing
         ( Translations
-        , TranslationsJson
         , t
         , fetchTranslations
         , initialTranslations
@@ -12,7 +11,7 @@ module I18Next
 app. It allows you to load json translation files, display the text and
 interpolate placeholders.
 # Definition
-@docs Translations, TranslationsJson
+@docs Translations
 # Common Helpers
 @docs fetchTranslations, initialTranslations, t
 # Chaining Maybes
@@ -22,19 +21,13 @@ interpolate placeholders.
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 import Http exposing (Request)
-import Data exposing (Tree(..), DecodedStuff)
+import Data exposing (Tree(..), PlaceholderConfig)
 
 
 {-| A type that represents your loaded translations
 -}
 type alias Translations =
     Data.Translations
-
-
-{-| A type that represents undecoded Translations
--}
-type alias TranslationsJson =
-    Data.TranslationsJson
 
 
 {-| Use this to intialize Translations in your model.
@@ -48,7 +41,7 @@ initialTranslations =
 -}
 decodeTranslations : Decoder Translations
 decodeTranslations =
-    Decode.map mapDecodedStuffToDict decodeTree
+    Decode.map mapTreeToDict decodeTree
 
 
 decodeTree : Decoder Tree
@@ -60,8 +53,8 @@ decodeTree =
         ]
 
 
-mapDecodedStuffToDict : Tree -> Translations
-mapDecodedStuffToDict decodedStuff =
+mapTreeToDict : Tree -> Translations
+mapTreeToDict tree =
     let
         foldTree =
             Dict.foldl
@@ -81,7 +74,7 @@ mapDecodedStuffToDict decodedStuff =
                                 foldTree ( acc, newNamespace key ) dict
                 )
     in
-        case decodedStuff of
+        case tree of
             Branch dict ->
                 foldTree ( initialTranslations, "" ) dict |> Tuple.first
 
@@ -92,10 +85,20 @@ mapDecodedStuffToDict decodedStuff =
 {-| Translate a value at a given string.
 
     -- Use the key.
-    t translations "labels.greetings.hello"
+    t "labels.greetings.hello" translations
 -}
-t : Translations -> String -> String
-t translations key =
+t : String -> Translations -> String
+t key translations =
+    Dict.get key translations |> Maybe.withDefault key
+
+
+{-| Translate a value at a given string and replace placeholders.
+
+    -- Use the key.
+    tp config key replacements translations "labels.greetings.hello"
+-}
+tp : PlaceholderConfig -> String -> List String -> Translations -> String
+tp config key replacements translations =
     Dict.get key translations |> Maybe.withDefault key
 
 

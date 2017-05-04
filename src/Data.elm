@@ -4,12 +4,14 @@ import Json.Encode
 import Dict exposing (Dict)
 
 
+type alias PlaceholderConfig =
+    { startDelimiter : String
+    , endDelimiter : String
+    }
+
+
 type alias Translations =
     Dict String String
-
-
-type alias DecodedStuff =
-    Tree
 
 
 type alias TranslationsJson =
