@@ -1,24 +1,8 @@
-module Main exposing (..)
+module ElmI18Next exposing (Translations, TranslationsJson, parseTranslations, t)
 
-import Html exposing (programWithFlags, Html, text)
 import Dict exposing (Dict)
 import Json.Encode
 import Json.Decode as Decode exposing (Decoder)
-
-
-main : Program Flags Model msg
-main =
-    programWithFlags
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = \_ -> Sub.none
-        }
-
-
-type alias Model =
-    { translations : Translations
-    }
 
 
 type alias Translations =
@@ -29,7 +13,7 @@ type alias DecodedStuff =
     Tree
 
 
-type alias Flags =
+type alias TranslationsJson =
     Json.Encode.Value
 
 
@@ -47,8 +31,8 @@ decodeTree =
         ]
 
 
-parseFlagsToDict : Flags -> DecodedStuff
-parseFlagsToDict flags =
+decodeTranslations : TranslationsJson -> DecodedStuff
+decodeTranslations flags =
     Decode.decodeValue decodeTree flags
         |> Result.withDefault (Leaf "OMG")
 
@@ -82,26 +66,11 @@ mapDecodedStuffToDict decodedStuff =
                 Dict.empty
 
 
-init : Flags -> ( Model, Cmd msg )
-init flags =
-    let
-        _ =
-            Debug.log "flags" flags
-
-        value =
-            Debug.log "decoded"
-                (parseFlagsToDict flags
-                    |> mapDecodedStuffToDict
-                )
-    in
-        ( Model value, Cmd.none )
+parseTranslations : TranslationsJson -> Translations
+parseTranslations =
+    decodeTranslations >> mapDecodedStuffToDict
 
 
-view : Model -> Html msg
-view model =
-    text ("Some model " ++ toString model)
-
-
-update : msg -> Model -> ( Model, Cmd msg )
-update msg model =
-    ( model, Cmd.none )
+t : Translations -> String -> String
+t translations key =
+    Dict.get key translations |> Maybe.withDefault key

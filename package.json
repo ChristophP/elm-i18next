@@ -4,7 +4,7 @@
   "description": "A client that loads translation files and translates strings",
   "main": "index.js",
   "scripts": {
-    "start": "elm-live src/Main.elm --output=public/elm.js -- --debug --warn",
+    "start": "elm-live public/Testpage.elm --output=public/elm.js -- --debug --warn",
     "test": "elm-test"
   },
   "author": "",
