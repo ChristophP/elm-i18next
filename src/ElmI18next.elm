@@ -1,8 +1,16 @@
-module ElmI18Next exposing (Translations, TranslationsJson, parseTranslations, t)
+module ElmI18Next
+    exposing
+        ( Translations
+        , TranslationsJson
+        , t
+        , fetchTranslations
+        , initialTranslations
+        )
 
 import Dict exposing (Dict)
 import Json.Encode
 import Json.Decode as Decode exposing (Decoder)
+import Http exposing (Request)
 
 
 type alias Translations =
@@ -20,6 +28,11 @@ type alias TranslationsJson =
 type Tree
     = Branch (Dict String Tree)
     | Leaf String
+
+
+initialTranslations : Translations
+initialTranslations =
+    Dict.empty
 
 
 decodeTree : Decoder Tree
@@ -74,3 +87,13 @@ parseTranslations =
 t : Translations -> String -> String
 t translations key =
     Dict.get key translations |> Maybe.withDefault key
+
+
+translationRequest : String -> Request Translations
+translationRequest url =
+    Http.get url (Decode.map mapDecodedStuffToDict decodeTree)
+
+
+fetchTranslations : (Result Http.Error Translations -> msg) -> String -> Cmd msg
+fetchTranslations msg url =
+    Http.send msg (translationRequest url)

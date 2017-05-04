@@ -1,12 +1,24 @@
 module Testpage exposing (..)
 
-import Html exposing (programWithFlags, Html, div, text)
-import ElmI18Next exposing (Translations, TranslationsJson, parseTranslations, t)
+import Html exposing (program, Html, div, text)
+import ElmI18Next
+    exposing
+        ( Translations
+        , TranslationsJson
+        , t
+        , fetchTranslations
+        , initialTranslations
+        )
+import Http
 
 
-main : Program TranslationsJson Model msg
+type Msg
+    = TranslationsLoaded (Result Http.Error Translations)
+
+
+main : Program Never Model Msg
 main =
-    programWithFlags
+    program
         { init = init
         , view = view
         , update = update
@@ -19,13 +31,9 @@ type alias Model =
     }
 
 
-init : TranslationsJson -> ( Model, Cmd msg )
-init flags =
-    let
-        value =
-            Debug.log "decoded" (parseTranslations flags)
-    in
-        ( Model value, Cmd.none )
+init : ( Model, Cmd Msg )
+init =
+    ( Model initialTranslations, fetchTranslations TranslationsLoaded "/public/locale/translations.en.json" )
 
 
 view : Model -> Html msg
@@ -39,6 +47,11 @@ view model =
         ]
 
 
-update : msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        TranslationsLoaded (Ok translations) ->
+            ( { model | translations = translations }, Cmd.none )
+
+        TranslationsLoaded (Err _) ->
+            ( model, Cmd.none )
