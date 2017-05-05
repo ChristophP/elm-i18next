@@ -55,7 +55,7 @@ In JS do:
 ```js
 Elm.YourApp.embed(someDomNode, translations);
 ```
-Then in elm you use them in the init function of your
+Then in elm you use them in the init function of your app.
 ```elm
 import Json.Encode
 import Json.Decode
@@ -67,7 +67,7 @@ init flags =
     translationsResult = Json.Decode.decodeValue decodeTranslations flags
   in
     case translationsResult of
-      Ok translations -> ({ model | translations = translattions }, Cmd.none)
+      Ok translations -> ({ model | translations = translations }, Cmd.none)
       Err err -> ... -- handle the error or use `Result.withDefault`
 ```
 
