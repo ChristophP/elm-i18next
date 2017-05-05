@@ -4,7 +4,7 @@ Functions for working with dynamically loaded translations in Elm. PRs and sugge
 
 ## Simple Example
 
-```elm package install christophp/elm-i18next```
+```elm package install ChristophP/elm-i18next```
 
 Then use the module in your app like this.
 
