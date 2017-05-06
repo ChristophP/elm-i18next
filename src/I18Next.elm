@@ -26,15 +26,15 @@ import Data exposing (Tree(..), PlaceholderConfig)
 
 {-| A type that represents your loaded translations
 -}
-type alias Translations =
-    Data.Translations
+type Translations
+    = Translations Data.Translations
 
 
 {-| Use this to initialize Translations in your model.
 -}
 initialTranslations : Translations
 initialTranslations =
-    Dict.empty
+    Translations Dict.empty
 
 
 {-| Decode a JSON translations file.
@@ -76,7 +76,9 @@ mapTreeToDict tree =
     in
         case tree of
             Branch dict ->
-                foldTree ( initialTranslations, "" ) dict |> Tuple.first
+                foldTree ( Dict.empty, "" ) dict
+                    |> Tuple.first
+                    |> Translations
 
             _ ->
                 initialTranslations
@@ -88,7 +90,7 @@ mapTreeToDict tree =
     t "labels.greetings.hello" translations
 -}
 t : String -> Translations -> String
-t key translations =
+t key (Translations translations) =
     Dict.get key translations |> Maybe.withDefault key
 
 
@@ -98,7 +100,7 @@ t key translations =
     tp config key replacements translations "labels.greetings.hello"
 -}
 tp : PlaceholderConfig -> String -> List String -> Translations -> String
-tp config key replacements translations =
+tp config key replacements (Translations translations) =
     Dict.get key translations |> Maybe.withDefault key
 
 
