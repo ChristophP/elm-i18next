@@ -101,36 +101,36 @@ placeholderRegex ( startDelim, endDelim ) =
     regex (escape startDelim ++ "(.*?)" ++ escape endDelim)
 
 
+replaceMatch : Replacements -> Regex.Match -> String
+replaceMatch replacements { match, submatches } =
+    case submatches of
+        maybeName :: _ ->
+            Maybe.andThen
+                (\name ->
+                    Dict.fromList replacements
+                        |> Dict.get name
+                )
+                maybeName
+                |> Maybe.withDefault match
+
+        [] ->
+            match
+
+
 {-| Translate a value at a given string and replace placeholders.
 
     -- Use the key.
     tp config key replacements translations "labels.greetings.hello"
 -}
 tr : PlaceholderConfig -> String -> Replacements -> Translations -> String
-tr delims key replacementsList (Translations translations) =
-    let
-        replacements : Dict String String
-        replacements =
-            Dict.fromList replacementsList
-
-        replaceMatch : Regex.Match -> String
-        replaceMatch =
-            \{ match, submatches } ->
-                case Debug.log "lookup" <| submatches of
-                    maybeName :: _ ->
-                        Maybe.andThen (\name -> Dict.get name replacements) maybeName
-                            |> Maybe.withDefault match
-
-                    [] ->
-                        match
-    in
-        Dict.get key translations
-            |> Maybe.map
-                (replace All
-                    (placeholderRegex delims)
-                    replaceMatch
-                )
-            |> Maybe.withDefault "Peter"
+tr delims key replacements (Translations translations) =
+    Dict.get key translations
+        |> Maybe.map
+            (replace All
+                (placeholderRegex delims)
+                (replaceMatch replacements)
+            )
+        |> Maybe.withDefault key
 
 
 {-| Translate a value and try different fallback languages.
