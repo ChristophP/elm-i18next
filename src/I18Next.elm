@@ -68,7 +68,7 @@ mapTreeToDict tree =
                     in
                         case val of
                             Leaf str ->
-                                ( Dict.insert (newNamespace key) str acc, "" )
+                                ( Dict.insert (newNamespace key) str acc, namespace )
 
                             Branch dict ->
                                 foldTree ( acc, newNamespace key ) dict
