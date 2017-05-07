@@ -4,10 +4,12 @@ import Json.Encode
 import Dict exposing (Dict)
 
 
+type alias Replacements =
+    List ( String, String )
+
+
 type alias PlaceholderConfig =
-    { startDelimiter : String
-    , endDelimiter : String
-    }
+    ( String, String )
 
 
 type alias Translations =

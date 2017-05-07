@@ -5,6 +5,7 @@ import I18Next
     exposing
         ( Translations
         , t
+        , tr
         , fetchTranslations
         , initialTranslations
         )
@@ -42,6 +43,13 @@ view model =
         [ div [] [ text ("Some model " ++ toString model) ]
         , div [] [ text ("t \"a\" = " ++ t "a" model.translations) ]
         , div [] [ text ("t \"b.c\" = " ++ t "b.c" model.translations) ]
+        , div [] [ text ("t \"b.d\" = " ++ t "b.d" model.translations) ]
+        , div []
+            [ text
+                ("tr ( \"{\", \"}\" ) \"b.e.f\" [ ( \"firstname\", \"Peter\" ), ( \"lastname\", \"Lustig\" ) ]= "
+                    ++ tr ( "{", "}" ) "b.e.f" [ ( "firstname", "Peter" ), ( "lastname", "Lustig" ) ] model.translations
+                )
+            ]
         , div [] [ text ("t \"notExisting\" = " ++ t "notExisting" model.translations) ]
         ]
 

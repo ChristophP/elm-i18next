@@ -1,6 +1,10 @@
 {
   "a": "Hello",
   "b": {
-    "c": "bye"
+    "c": "bye",
+    "d": "Good day {name}",
+    "e": {
+      "f": "Hello {firstname} {lastname}"
+    }
   }
 }

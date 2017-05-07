@@ -2,6 +2,7 @@ module I18Next
     exposing
         ( Translations
         , t
+        , tr
         , fetchTranslations
         , initialTranslations
         , decodeTranslations
@@ -13,7 +14,7 @@ interpolate placeholders.
 # Types and Data
 @docs Translations, initialTranslations
 # Using Translations
-@docs t
+@docs t, tr
 # Fetching and Deconding
 @docs fetchTranslations, decodeTranslations
 -}
@@ -21,7 +22,8 @@ interpolate placeholders.
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 import Http exposing (Request)
-import Data exposing (Tree(..), PlaceholderConfig)
+import Regex exposing (Regex, regex, replace, escape, HowMany(..))
+import Data exposing (Tree(..), PlaceholderConfig, Replacements)
 
 
 {-| A type that represents your loaded translations
@@ -94,14 +96,60 @@ t key (Translations translations) =
     Dict.get key translations |> Maybe.withDefault key
 
 
+placeholderRegex : PlaceholderConfig -> Regex
+placeholderRegex ( startDelim, endDelim ) =
+    regex (escape startDelim ++ "(.*?)" ++ escape endDelim)
+
+
 {-| Translate a value at a given string and replace placeholders.
 
     -- Use the key.
     tp config key replacements translations "labels.greetings.hello"
 -}
-tp : PlaceholderConfig -> String -> List String -> Translations -> String
-tp config key replacements (Translations translations) =
-    Dict.get key translations |> Maybe.withDefault key
+tr : PlaceholderConfig -> String -> Replacements -> Translations -> String
+tr delims key replacementsList (Translations translations) =
+    let
+        replacements : Dict String String
+        replacements =
+            Dict.fromList replacementsList
+
+        replaceMatch : Regex.Match -> String
+        replaceMatch =
+            \{ match, submatches } ->
+                case Debug.log "lookup" <| submatches of
+                    maybeName :: _ ->
+                        Maybe.andThen (\name -> Dict.get name replacements) maybeName
+                            |> Maybe.withDefault match
+
+                    [] ->
+                        match
+    in
+        Dict.get key translations
+            |> Maybe.map
+                (replace All
+                    (placeholderRegex delims)
+                    replaceMatch
+                )
+            |> Maybe.withDefault "Peter"
+
+
+{-| Translate a value and try different fallback languages.
+
+    -- Use the key.
+    tp config key replacements translations "labels.greetings.hello"
+-}
+tf : String -> List Translations -> String
+tf key translationsList =
+    case translationsList of
+        (Translations translations) :: rest ->
+            Dict.get key translations |> Maybe.withDefault (tf key rest)
+
+        [] ->
+            key
+
+
+
+--trf : PlaceholderConfig -> String -> List String -> Translations -> String
 
 
 translationRequest : String -> Request Translations
