@@ -4,6 +4,7 @@ module I18Next
         , t
         , tr
         , tf
+        , trf
         , fetchTranslations
         , initialTranslations
         , decodeTranslations
@@ -15,7 +16,7 @@ interpolate placeholders.
 # Types and Data
 @docs Translations, initialTranslations
 # Using Translations
-@docs t, tr
+@docs t, tr, tf, trf
 # Fetching and Deconding
 @docs fetchTranslations, decodeTranslations
 -}
@@ -123,7 +124,7 @@ replaceMatch replacements { match, submatches } =
 {-| Translate a value at a given string and replace placeholders.
 
     -- Use the key.
-    tp config key replacements translations "labels.greetings.hello"
+    tr config key replacements translations "labels.greetings.hello"
 -}
 tr : PlaceholderConfig -> String -> Replacements -> Translations -> String
 tr delims key replacements (Translations translations) =
@@ -151,8 +152,23 @@ tf key translationsList =
             key
 
 
+{-| Translate a value at a key, while replacing placeholders, and trying
+different fallback languages.
+-}
+trf : PlaceholderConfig -> String -> Replacements -> List Translations -> String
+trf delims key replacements translationsList =
+    case translationsList of
+        (Translations translations) :: rest ->
+            Dict.get key translations
+                |> Maybe.map
+                    (replace All
+                        (placeholderRegex delims)
+                        (replaceMatch replacements)
+                    )
+                |> Maybe.withDefault (trf delims key replacements rest)
 
---trf : PlaceholderConfig -> String -> List String -> Translations -> String
+        [] ->
+            key
 
 
 translationRequest : String -> Request Translations

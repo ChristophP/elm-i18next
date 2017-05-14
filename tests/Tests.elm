@@ -13,6 +13,7 @@ import I18Next
         , t
         , tr
         , tf
+        , trf
         , initialTranslations
         )
 
@@ -28,7 +29,8 @@ translationJsonEn =
       "hello": "Hello",
       "goodDay": "Good Day {{firstName}} {{lastName}}"
     },
-    "englishOnly": "This key only exists in english"
+    "englishOnly": "This key only exists in english",
+    "englishOnlyPlaceholder": "Only english with {{firstName}} {{lastName}}"
   }"""
 
 
@@ -65,6 +67,20 @@ langList =
     [ translationsDe, translationsEn ]
 
 
+delims =
+    ( "{{", "}}" )
+
+
+replacements =
+    [ ( "firstName", "Peter" ), ( "lastName", "Griffin" ) ]
+
+
+invalidReplacements =
+    [ ( "nonExstingPlaceholder", "Peter" )
+    , ( "nonExstingPlaceholder", "Griffin" )
+    ]
+
+
 all : Test
 all =
     describe "Translations Test"
@@ -96,6 +112,7 @@ all =
             , translate
             , translateWithPlaceholders
             , translateWithFallback
+            , translateWithPlaceholdersAndFallback
             ]
         ]
 
@@ -116,11 +133,11 @@ translateWithPlaceholders =
     describe "the tr function"
         [ test "translates and replaces placeholders" <|
             \() ->
-                tr ( "{{", "}}" ) "greetings.goodDay" [ ( "firstName", "Peter" ), ( "lastName", "Griffin" ) ] translationsEn
+                tr delims "greetings.goodDay" replacements translationsEn
                     |> Expect.equal "Good Day Peter Griffin"
         , test "tr does not replace if the match can't be found" <|
             \() ->
-                tr ( "{{", "}}" ) "greetings.goodDay" [ ( "nonExstingPlaceholder", "Peter" ), ( "nonExstingPlaceholder", "Griffin" ) ] translationsEn
+                tr delims "greetings.goodDay" invalidReplacements translationsEn
                     |> Expect.equal "Good Day {{firstName}} {{lastName}}"
         , test "tr returns the key if it doesn not exists" <|
             \() ->
@@ -143,4 +160,29 @@ translateWithFallback =
             \() ->
                 tf "some.non-existing.key" langList
                     |> Expect.equal "some.non-existing.key"
+        ]
+
+
+translateWithPlaceholdersAndFallback =
+    describe "the trf function"
+        [ test "uses the german when the key exists" <|
+            \() ->
+                trf delims "greetings.hello" replacements langList
+                    |> Expect.equal "Hallo"
+        , test "uses english as a fallback" <|
+            \() ->
+                trf delims "englishOnly" replacements langList
+                    |> Expect.equal "This key only exists in english"
+        , test "uses the key if none is found" <|
+            \() ->
+                trf delims "some.non-existing.key" replacements langList
+                    |> Expect.equal "some.non-existing.key"
+        , test "translates and replaces in german when key is found" <|
+            \() ->
+                trf delims "greetings.goodDay" replacements langList
+                    |> Expect.equal "Guten Tag Peter Griffin"
+        , test "translates and replaces in fallback when key is not found" <|
+            \() ->
+                trf delims "englishOnlyPlaceholder" replacements langList
+                    |> Expect.equal "Only english with Peter Griffin"
         ]
