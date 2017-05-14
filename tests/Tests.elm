@@ -5,7 +5,13 @@ import Expect
 import Fuzz exposing (list, int, tuple, string)
 import String
 import Json.Decode as Decode
-import I18Next exposing (decodeTranslations, Translations)
+import I18Next
+    exposing
+        ( decodeTranslations
+        , Translations
+        , t
+        , initialTranslations
+        )
 
 
 translationJsonEn : String
@@ -41,6 +47,11 @@ invalidTranslationJson =
     """{ "age": 12  }"""
 
 
+translationsEn =
+    Decode.decodeString decodeTranslations translationJsonEn
+        |> Result.withDefault initialTranslations
+
+
 all : Test
 all =
     describe "Translations Test"
@@ -62,10 +73,8 @@ all =
                         Err err ->
                             Expect.pass
             ]
-        , describe "Fuzz test examples, using randomly generated input"
-            [ fuzz (list int) "Lists always have positive length" <|
-                \aList ->
-                    List.length aList |> Expect.atLeast 0
+        , describe "the t function"
+            [ translate
             , fuzz (list int) "Sorting a list does not change its length" <|
                 \aList ->
                     List.sort aList |> List.length |> Expect.equal (List.length aList)
@@ -77,3 +86,9 @@ all =
                     s1 ++ s2 |> String.length |> Expect.equal (String.length s1 + String.length s2)
             ]
         ]
+
+
+translate =
+    test "t returns the translation for a key if it exists" <|
+        \() ->
+            t "buttons.save" translationsEn |> Expect.equal "Save"
