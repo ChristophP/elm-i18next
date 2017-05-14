@@ -3,6 +3,7 @@ module I18Next
         ( Translations
         , t
         , tr
+        , tf
         , fetchTranslations
         , initialTranslations
         , decodeTranslations

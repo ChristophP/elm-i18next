@@ -12,6 +12,7 @@ import I18Next
         , Translations
         , t
         , tr
+        , tf
         , initialTranslations
         )
 
@@ -26,7 +27,8 @@ translationJsonEn =
     "greetings": {
       "hello": "Hello",
       "goodDay": "Good Day {{firstName}} {{lastName}}"
-    }
+    },
+    "englishOnly": "This key only exists in english"
   }"""
 
 
@@ -52,6 +54,15 @@ invalidTranslationJson =
 translationsEn =
     Decode.decodeString decodeTranslations translationJsonEn
         |> Result.withDefault initialTranslations
+
+
+translationsDe =
+    Decode.decodeString decodeTranslations translationJsonDe
+        |> Result.withDefault initialTranslations
+
+
+langList =
+    [ translationsDe, translationsEn ]
 
 
 all : Test
@@ -84,6 +95,7 @@ all =
                             Expect.pass
             , translate
             , translateWithPlaceholders
+            , translateWithFallback
             ]
         ]
 
@@ -97,9 +109,6 @@ translate =
             \() ->
                 t "some.non-existing.key" translationsEn
                     |> Expect.equal "some.non-existing.key"
-        , fuzz2 string string "The length of a string equals the sum of its substrings' lengths" <|
-            \s1 s2 ->
-                s1 ++ s2 |> String.length |> Expect.equal (String.length s1 + String.length s2)
         ]
 
 
@@ -117,7 +126,21 @@ translateWithPlaceholders =
             \() ->
                 t "some.non-existing.key" translationsEn
                     |> Expect.equal "some.non-existing.key"
-        , fuzz2 string string "The length of a string equals the sum of its substrings' lengths" <|
-            \s1 s2 ->
-                s1 ++ s2 |> String.length |> Expect.equal (String.length s1 + String.length s2)
+        ]
+
+
+translateWithFallback =
+    describe "the tf function"
+        [ test "uses the german when the key exists" <|
+            \() ->
+                tf "greetings.hello" langList
+                    |> Expect.equal "Hallo"
+        , test "uses english as a fallback" <|
+            \() ->
+                tf "englishOnly" langList
+                    |> Expect.equal "This key only exists in english"
+        , test "uses the key if none is found" <|
+            \() ->
+                tf "some.non-existing.key" langList
+                    |> Expect.equal "some.non-existing.key"
         ]
