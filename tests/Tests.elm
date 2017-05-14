@@ -5,11 +5,13 @@ import Expect
 import Fuzz exposing (list, int, tuple, string)
 import String
 import Json.Decode as Decode
+import Dict
 import I18Next
     exposing
         ( decodeTranslations
         , Translations
         , t
+        , tr
         , initialTranslations
         )
 
@@ -37,7 +39,7 @@ translationJsonDe =
     },
     "greetings": {
       "hello": "Hallo",
-      "goodDay": "Guten Tag {firstName}} {{lastName}}"
+      "goodDay": "Guten Tag {{firstName}} {{lastName}}"
     }
   }"""
 
@@ -64,6 +66,14 @@ all =
 
                         Err err ->
                             Expect.fail err
+              --(Translations translations) ->
+              --Expect.equal translations
+              --Dict.fromList
+              --[ ( "buttons.save", "Save" )
+              --, ( "buttons.cancel", "Cancel" )
+              --, ( "greetings.hello", "Hello" )
+              --, ( "greetings.goodDay", "Guten Tag {{firstName}} {{lastName}}" )
+              --]
             , test "fails if i gets an invalid translations JSON" <|
                 \() ->
                     case Decode.decodeString decodeTranslations invalidTranslationJson of
@@ -72,23 +82,42 @@ all =
 
                         Err err ->
                             Expect.pass
-            ]
-        , describe "the t function"
-            [ translate
-            , fuzz (list int) "Sorting a list does not change its length" <|
-                \aList ->
-                    List.sort aList |> List.length |> Expect.equal (List.length aList)
-            , fuzzWith { runs = 1000 } int "List.member will find an integer in a list containing it" <|
-                \i ->
-                    List.member i [ i ] |> Expect.true "If you see this, List.member returned False!"
-            , fuzz2 string string "The length of a string equals the sum of its substrings' lengths" <|
-                \s1 s2 ->
-                    s1 ++ s2 |> String.length |> Expect.equal (String.length s1 + String.length s2)
+            , translate
+            , translateWithPlaceholders
             ]
         ]
 
 
 translate =
-    test "t returns the translation for a key if it exists" <|
-        \() ->
-            t "buttons.save" translationsEn |> Expect.equal "Save"
+    describe "the t function"
+        [ test "returns the translation for a key if it exists" <|
+            \() ->
+                t "buttons.save" translationsEn |> Expect.equal "Save"
+        , test "returns the key if it doesn not exists" <|
+            \() ->
+                t "some.non-existing.key" translationsEn
+                    |> Expect.equal "some.non-existing.key"
+        , fuzz2 string string "The length of a string equals the sum of its substrings' lengths" <|
+            \s1 s2 ->
+                s1 ++ s2 |> String.length |> Expect.equal (String.length s1 + String.length s2)
+        ]
+
+
+translateWithPlaceholders =
+    describe "the tr function"
+        [ test "translates and replaces placeholders" <|
+            \() ->
+                tr ( "{{", "}}" ) "greetings.goodDay" [ ( "firstName", "Peter" ), ( "lastName", "Griffin" ) ] translationsEn
+                    |> Expect.equal "Good Day Peter Griffin"
+        , test "tr does not replace if the match can't be found" <|
+            \() ->
+                tr ( "{{", "}}" ) "greetings.goodDay" [ ( "nonExstingPlaceholder", "Peter" ), ( "nonExstingPlaceholder", "Griffin" ) ] translationsEn
+                    |> Expect.equal "Good Day {{firstName}} {{lastName}}"
+        , test "tr returns the key if it doesn not exists" <|
+            \() ->
+                t "some.non-existing.key" translationsEn
+                    |> Expect.equal "some.non-existing.key"
+        , fuzz2 string string "The length of a string equals the sum of its substrings' lengths" <|
+            \s1 s2 ->
+                s1 ++ s2 |> String.length |> Expect.equal (String.length s1 + String.length s2)
+        ]
