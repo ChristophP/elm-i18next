@@ -11,6 +11,7 @@ import I18Next
         ( decodeTranslations
         , Translations
         , Delims(..)
+        , Replacements
         , t
         , tr
         , tf
@@ -54,16 +55,19 @@ invalidTranslationJson =
     """{ "age": 12  }"""
 
 
+translationsEn : Translations
 translationsEn =
     Decode.decodeString decodeTranslations translationJsonEn
         |> Result.withDefault initialTranslations
 
 
+translationsDe : Translations
 translationsDe =
     Decode.decodeString decodeTranslations translationJsonDe
         |> Result.withDefault initialTranslations
 
 
+langList : List Translations
 langList =
     [ translationsDe, translationsEn ]
 
@@ -72,10 +76,12 @@ delims =
     ( "{{", "}}" )
 
 
+replacements : Replacements
 replacements =
     [ ( "firstName", "Peter" ), ( "lastName", "Griffin" ) ]
 
 
+invalidReplacements : Replacements
 invalidReplacements =
     [ ( "nonExstingPlaceholder", "Peter" )
     , ( "nonExstingPlaceholder", "Griffin" )
@@ -102,14 +108,7 @@ all =
               --, ( "greetings.hello", "Hello" )
               --, ( "greetings.goodDay", "Guten Tag {{firstName}} {{lastName}}" )
               --]
-            , test "fails if i gets an invalid translations JSON" <|
-                \() ->
-                    case Decode.decodeString decodeTranslations invalidTranslationJson of
-                        Ok _ ->
-                            Expect.fail "Decoding passed but should have failed."
-
-                        Err err ->
-                            Expect.pass
+            , decode
             , translate
             , translateWithPlaceholders
             , translateWithFallback
@@ -118,72 +117,88 @@ all =
         ]
 
 
+decode : Test
+decode =
+    test "fails if it gets an invalid translations JSON" <|
+        \() ->
+            case Decode.decodeString decodeTranslations invalidTranslationJson of
+                Ok _ ->
+                    Expect.fail "Decoding passed but should have failed."
+
+                Err err ->
+                    Expect.pass
+
+
+translate : Test
 translate =
     describe "the t function"
         [ test "returns the translation for a key if it exists" <|
             \() ->
-                t "buttons.save" translationsEn |> Expect.equal "Save"
+                t translationsEn "buttons.save" |> Expect.equal "Save"
         , test "returns the key if it doesn not exists" <|
             \() ->
-                t "some.non-existing.key" translationsEn
+                t translationsEn "some.non-existing.key"
                     |> Expect.equal "some.non-existing.key"
         ]
 
 
+translateWithPlaceholders : Test
 translateWithPlaceholders =
     describe "the tr function"
         [ test "translates and replaces placeholders" <|
             \() ->
-                tr Curly "greetings.goodDay" replacements translationsEn
+                tr translationsEn Curly "greetings.goodDay" replacements
                     |> Expect.equal "Good Day Peter Griffin"
         , test "tr does not replace if the match can't be found" <|
             \() ->
-                tr Curly "greetings.goodDay" invalidReplacements translationsEn
+                tr translationsEn Curly "greetings.goodDay" invalidReplacements
                     |> Expect.equal "Good Day {{firstName}} {{lastName}}"
         , test "tr returns the key if it doesn not exists" <|
             \() ->
-                tr Curly "some.non-existing.key" replacements translationsEn
+                tr translationsEn Curly "some.non-existing.key" replacements
                     |> Expect.equal "some.non-existing.key"
         ]
 
 
+translateWithFallback : Test
 translateWithFallback =
     describe "the tf function"
         [ test "uses the german when the key exists" <|
             \() ->
-                tf "greetings.hello" langList
+                tf langList "greetings.hello"
                     |> Expect.equal "Hallo"
         , test "uses english as a fallback" <|
             \() ->
-                tf "englishOnly" langList
+                tf langList "englishOnly"
                     |> Expect.equal "This key only exists in english"
         , test "uses the key if none is found" <|
             \() ->
-                tf "some.non-existing.key" langList
+                tf langList "some.non-existing.key"
                     |> Expect.equal "some.non-existing.key"
         ]
 
 
+translateWithPlaceholdersAndFallback : Test
 translateWithPlaceholdersAndFallback =
     describe "the trf function"
         [ test "uses the german when the key exists" <|
             \() ->
-                trf Curly "greetings.hello" replacements langList
+                trf langList Curly "greetings.hello" replacements
                     |> Expect.equal "Hallo"
         , test "uses english as a fallback" <|
             \() ->
-                trf Curly "englishOnly" replacements langList
+                trf langList Curly "englishOnly" replacements
                     |> Expect.equal "This key only exists in english"
         , test "uses the key if none is found" <|
             \() ->
-                trf Curly "some.non-existing.key" replacements langList
+                trf langList Curly "some.non-existing.key" replacements
                     |> Expect.equal "some.non-existing.key"
         , test "translates and replaces in german when key is found" <|
             \() ->
-                trf Curly "greetings.goodDay" replacements langList
+                trf langList Curly "greetings.goodDay" replacements
                     |> Expect.equal "Guten Tag Peter Griffin"
         , test "translates and replaces in fallback when key is not found" <|
             \() ->
-                trf Curly "englishOnlyPlaceholder" replacements langList
+                trf langList Curly "englishOnlyPlaceholder" replacements
                     |> Expect.equal "Only english with Peter Griffin"
         ]
