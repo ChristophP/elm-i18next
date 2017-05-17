@@ -1,5 +1,5 @@
 {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "summary": "Use this module to load, decode and use translations in your app",
     "repository": "https://github.com/ChristophP/elm-i18next.git",
     "license": "BSD3",
