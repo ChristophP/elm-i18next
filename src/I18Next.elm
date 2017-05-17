@@ -233,7 +233,15 @@ tf translationsList key =
 
 
 {-| Combines [`tr`](I18Next#tr) and the [`tf`](I18Next#tf) function.
-Only use this if you want to replace placeholders and apply fallback languages.
+Only use this if you want to replace placeholders and apply fallback languages
+at the same time.
+    -- If your translations are { "greet": "Hello {{name}}" }
+    import I18Next exposing (tr, Delims(..))
+    let
+      langList = [germanTranslations, englishTranslations]
+    in
+      trf langList Curly "greet" [("name", "Peter")] -- "Hello Peter"
+
 -}
 trf : List Translations -> Delims -> String -> Replacements -> String
 trf translationsList delims key replacements =
