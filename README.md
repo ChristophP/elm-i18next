@@ -39,9 +39,9 @@ update msg model =
 -}
 view model =
     div []
-        [ div [] [ text (t "hello" model.translations) ] -- "Hallo"
-        , div [] [ text (t "greetings.goodDay" model.translations) ] -- "Good day."
-        , div [] [ text (t "nonExistingKey" model.translations) ] -- "nonExistingKey"
+        [ div [] [ text (t model.translations "hello") ] -- "Hallo"
+        , div [] [ text (t model.translations "greetings.goodDay") ] -- "Good day."
+        , div [] [ text (t model.translations "nonExistingKey") ] -- "nonExistingKey"
         ]
 ```
 
@@ -71,6 +71,12 @@ init flags =
       Err err -> ... -- handle the error or use `Result.withDefault`
 ```
 
+### Advanced Stuff: Placeholders and fallback languages
+
+There is also support for placeholders and fallback languages. Check the
+official [docs](http://package.elm-lang.org/packages/ChristophP/elm-i18next/latest/I18Next)
+for usage examples.
+
 ## Background
 
 Dealing with Translations in Elm has always come with some hoops to jump
@@ -83,12 +89,7 @@ allows you to load JSON translation files via HTTP and then use the
 data in your Elm app.
 
 
-## Coming up Soon
+## Contributing
 
 If you want to contribute PRs are highly welcome. If you need a feature please
-open an issure or catch me in the elm slack channel.
-
-- Interpolation for placeholders
-- Making the `Translations` type opaque
-- Suppport for fallback languages
-- Tests
+open an issue or catch me in the elm slack channel.

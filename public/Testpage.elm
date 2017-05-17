@@ -42,16 +42,16 @@ view model =
     div
         []
         [ div [] [ text ("Some model " ++ toString model) ]
-        , div [] [ text ("t \"a\" = " ++ t "a" model.translations) ]
-        , div [] [ text ("t \"b.c\" = " ++ t "b.c" model.translations) ]
-        , div [] [ text ("t \"b.d\" = " ++ t "b.d" model.translations) ]
+        , div [] [ text ("t \"a\" = " ++ t model.translations "a") ]
+        , div [] [ text ("t \"b.c\" = " ++ t model.translations "b.c") ]
+        , div [] [ text ("t \"b.d\" = " ++ t model.translations "b.d") ]
         , div []
             [ text
                 ("tr ( \"{{ \", \"}}\" ) \"b.e.f\" [ ( \"firstname\", \"Peter\" ), ( \"lastname\", \"Lustig\" ) ]= "
-                    ++ tr Curly "b.e.f" [ ( "firstname", "Peter" ), ( "lastname", "Lustig" ) ] model.translations
+                    ++ tr model.translations Curly "b.e.f" [ ( "firstname", "Peter" ), ( "lastname", "Lustig" ) ]
                 )
             ]
-        , div [] [ text ("t \"notExisting\" = " ++ t "notExisting" model.translations) ]
+        , div [] [ text ("t \"notExisting\" = " ++ t model.translations "notExisting") ]
         ]
 
 

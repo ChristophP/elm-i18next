@@ -147,10 +147,10 @@ mapTreeToDict tree =
     use dots to access nested keys.
     -}
     import I18Next exposing (t)
-    t "greet.hello" translations -- "Hello"
+    t translations "greet.hello" -- "Hello"
 -}
-t : String -> Translations -> String
-t key (Translations translations) =
+t : Translations -> String -> String
+t (Translations translations) key =
     Dict.get key translations |> Maybe.withDefault key
 
 
@@ -199,10 +199,10 @@ Use this when you need to replace placeholders.
 
     -- If your translations are { "greet": "Hello {{name}}" }
     import I18Next exposing (tr, Delims(..))
-    tr Curly "greet" [("name", "Peter")] translations
+    tr translations Curly "greet" [("name", "Peter")]
 -}
-tr : Delims -> String -> Replacements -> Translations -> String
-tr delims key replacements (Translations translations) =
+tr : Translations -> Delims -> String -> Replacements -> String
+tr (Translations translations) delims key replacements =
     Dict.get key translations
         |> Maybe.map
             (replace All
@@ -220,13 +220,13 @@ of languages, the function will try each language in the list.
     if not. If the key is not in any of the provided languages the function
     will return the key. -}
     import I18Next exposing (tf)
-    tf "labels.greetings.hello" [germanTranslations, englishTranslations]
+    tf [germanTranslations, englishTranslations] "labels.greetings.hello"
 -}
-tf : String -> List Translations -> String
-tf key translationsList =
+tf : List Translations -> String -> String
+tf translationsList key =
     case translationsList of
         (Translations translations) :: rest ->
-            Dict.get key translations |> Maybe.withDefault (tf key rest)
+            Dict.get key translations |> Maybe.withDefault (tf rest key)
 
         [] ->
             key
@@ -235,8 +235,8 @@ tf key translationsList =
 {-| Combines [`tr`](I18Next#tr) and the [`tf`](I18Next#tf) function.
 Only use this if you want to replace placeholders and apply fallback languages.
 -}
-trf : Delims -> String -> Replacements -> List Translations -> String
-trf delims key replacements translationsList =
+trf : List Translations -> Delims -> String -> Replacements -> String
+trf translationsList delims key replacements =
     case translationsList of
         (Translations translations) :: rest ->
             Dict.get key translations
@@ -245,7 +245,7 @@ trf delims key replacements translationsList =
                         (placeholderRegex delims)
                         (replaceMatch replacements)
                     )
-                |> Maybe.withDefault (trf delims key replacements rest)
+                |> Maybe.withDefault (trf rest delims key replacements)
 
         [] ->
             key
