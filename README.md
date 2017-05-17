@@ -11,6 +11,7 @@ Then use the module in your app like this.
 
 ```elm
 import Http
+import Html exposing (Html)
 import I18Next exposing
       ( t
       , tr
@@ -18,7 +19,6 @@ import I18Next exposing
       , Delims(..)
       , initialTranslations
       , fetchTranslations
-      , Http
       )
 
 type alias Model = {
@@ -27,11 +27,13 @@ type alias Model = {
 
 type Msg = TranslationsLoaded (Result Http.Error Translations)
 
+init : (Model, Cmd Msg)
 init = (
   { translations = initialTranslations }
   , fetchTranslations TranslationsLoaded "http://awesome.com/locale/translation.en.json"
   )
 
+update : Msg -> Model -> Model
 update msg model =
   case msg of
     TranslationsLoaded (Ok translations) ->
@@ -48,6 +50,8 @@ update msg model =
     }
   }
 -}
+
+view : Model -> Html Msg
 view model =
     div []
         [ div [] [ text (t model.translations "hello") ] -- "Hallo"
