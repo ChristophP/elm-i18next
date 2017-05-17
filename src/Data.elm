@@ -4,10 +4,6 @@ import Json.Encode
 import Dict exposing (Dict)
 
 
-type alias Replacements =
-    List ( String, String )
-
-
 type alias Translations =
     Dict String String
 

@@ -2,6 +2,7 @@ module I18Next
     exposing
         ( Translations
         , Delims(..)
+        , Replacements
         , t
         , tr
         , tf
@@ -16,7 +17,7 @@ app. It allows you to load json translation files, display the text and
 interpolate placeholders. There is also support for fallback languages if
 needed.
 # Types and Data
-@docs Translations, Delims, initialTranslations
+@docs Translations, Delims, Replacements, initialTranslations
 # Using Translations
 @docs t, tr, tf, trf
 # Fetching and Deconding
@@ -27,7 +28,7 @@ import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 import Http exposing (Request)
 import Regex exposing (Regex, regex, replace, escape, HowMany(..))
-import Data exposing (Tree(..), Replacements)
+import Data exposing (Tree(..))
 
 
 {-| A type that represents your loaded translations
@@ -44,6 +45,15 @@ type Delims
     = Curly
     | Underscore
     | Custom ( String, String )
+
+
+{-| An alias for replacements for use with placeholders. Each tuple should
+contain the name of the placeholder as the first value and the value for
+the placeholder as the second entry. See [`tr`](I18Next#tr) and
+[`trf`](I18Next#trf) for usage examples.
+-}
+type alias Replacements =
+    List ( String, String )
 
 
 {-| Use this to initialize Translations in your model. This may be needed
