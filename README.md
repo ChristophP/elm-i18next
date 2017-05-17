@@ -1,6 +1,7 @@
 # Elm i18next - Load and use JSON translations files at runtime
 
-Functions for working with dynamically loaded translations in Elm. PRs and suggestions welcome.
+Functions for working with dynamically loaded translations in Elm.
+PRs and suggestions welcome.
 
 ## Simple Example
 
@@ -10,7 +11,15 @@ Then use the module in your app like this.
 
 ```elm
 import Http
-import I18Next exposing (t, Translations, initialTranslations, fetchTranslations)
+import I18Next exposing
+      ( t
+      , tr
+      , Translations
+      , Delims(..)
+      , initialTranslations
+      , fetchTranslations
+      , Http
+      )
 
 type alias Model = {
   translations: Translations
@@ -29,11 +38,12 @@ update msg model =
     TranslationsLoaded (Err msg) ->
       ...
 
-{- Image your translations file looks like this:
+{- Imagine your translations file looks like this:
   {
     "hallo": "Hallo",
     "greetings": {
-      "goodDay": "Good Day."
+      "goodDay": "Good Day.",
+      "greetName": "Hi {{name}}"
     }
   }
 -}
@@ -42,17 +52,19 @@ view model =
         [ div [] [ text (t model.translations "hello") ] -- "Hallo"
         , div [] [ text (t model.translations "greetings.goodDay") ] -- "Good day."
         , div [] [ text (t model.translations "nonExistingKey") ] -- "nonExistingKey"
+        , div [] [ text (tr model.translations Curly "greetings.greetName" [("name", "Peter")]) ] -- "Hi Peter"
         ]
 ```
 
 ### Using preloaded Translations
 
-If you don't need to load the translations but for example have them on the page
-and pass them to the Elm programm as flags you can just use the decoder on it
-and put it into the Model.
+If you don't need to load the translations, but for example already have them
+on the page as a string or JSON and pass them to the Elm programm as flags
+you can just use the decoder on it and put it into the Model.
 
 In JS do:
 ```js
+// translation is a JSON string or JS object
 Elm.YourApp.embed(someDomNode, translations);
 ```
 Then in elm you use them in the init function of your app.
@@ -64,6 +76,7 @@ import I18Next exposing (decodeTranslations)
 init: Json.Encode.Value -> (model, Cmd msg)
 init flags =
   let
+    -- use Json.Decode.decodeString here instead if you are pasing the translations as a string
     translationsResult = Json.Decode.decodeValue decodeTranslations flags
   in
     case translationsResult of
@@ -80,13 +93,16 @@ for usage examples.
 ## Background
 
 Dealing with Translations in Elm has always come with some hoops to jump
-through. Existing solutions include tricks like passing translated strings
-into the elm app as flags or generating Translation modules as a pre-build
-step(SOURCES).
+through. Existing solutions include tricks like passing already translated
+strings into the elm app as flags or generating Translation modules as a
+pre-build step like
+[here](https://github.com/ChristophP/elm-i18n-module-generator) or
+[here](https://github.com/iosphere/elm-i18n).
 
 Inspired by the `i18next` client in from the JS world. This elm module
 allows you to load JSON translation files via HTTP and then use the
-data in your Elm app.
+data in your Elm app. This should allow for a easier-to-use
+internationalization as existing solutions.
 
 
 ## Contributing

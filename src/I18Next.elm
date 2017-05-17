@@ -66,7 +66,7 @@ initialTranslations =
 
 
 {-| Decode a JSON translations file. The JSON can be arbitrarly nested, but the
-leaf values can only be strings. Use this decoder direclty if you are passing
+leaf values can only be strings. Use this decoder directly if you are passing
 the translations JSON into your elm app via flags or ports. If you are
 loading your JSON file via Http use
 [`fetchTranslations`](I18Next#fetchTranslations) instead.
@@ -92,7 +92,7 @@ functions separated with dots.
     Json.Decode.decodeString decodeTranslations "{ \"greet\": \"Hello\" }"
 
     -- or on a Json.Encode.Value
-    Json.Encode.decodeValue decodeTranslations encodedJson
+    Json.Decode.decodeValue decodeTranslations encodedJson
 -}
 decodeTranslations : Decoder Translations
 decodeTranslations =
@@ -232,16 +232,16 @@ tf translationsList key =
             key
 
 
-{-| Combines [`tr`](I18Next#tr) and the [`tf`](I18Next#tf) function.
+{-| Combines the [`tr`](I18Next#tr) and the [`tf`](I18Next#tf) function.
 Only use this if you want to replace placeholders and apply fallback languages
 at the same time.
+
     -- If your translations are { "greet": "Hello {{name}}" }
-    import I18Next exposing (tr, Delims(..))
+    import I18Next exposing (trf, Delims(..))
     let
       langList = [germanTranslations, englishTranslations]
     in
       trf langList Curly "greet" [("name", "Peter")] -- "Hello Peter"
-
 -}
 trf : List Translations -> Delims -> String -> Replacements -> String
 trf translationsList delims key replacements =
