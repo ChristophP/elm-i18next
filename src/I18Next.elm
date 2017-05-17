@@ -26,15 +26,15 @@ import Data exposing (Tree(..), PlaceholderConfig)
 
 {-| A type that represents your loaded translations
 -}
-type Translations
-    = Translations Data.Translations
+type alias Translations =
+    Data.Translations
 
 
 {-| Use this to initialize Translations in your model.
 -}
 initialTranslations : Translations
 initialTranslations =
-    Translations Dict.empty
+    Dict.empty
 
 
 {-| Decode a JSON translations file.
@@ -56,9 +56,9 @@ decodeTree =
 mapTreeToDict : Tree -> Translations
 mapTreeToDict tree =
     let
-        foldTree =
+        foldTree initialValue dict namespace =
             Dict.foldl
-                (\key val ( acc, namespace ) ->
+                (\key val acc ->
                     let
                         newNamespace key =
                             if String.isEmpty namespace then
@@ -68,17 +68,17 @@ mapTreeToDict tree =
                     in
                         case val of
                             Leaf str ->
-                                ( Dict.insert (newNamespace key) str acc, namespace )
+                                Dict.insert (newNamespace key) str acc
 
                             Branch dict ->
-                                foldTree ( acc, newNamespace key ) dict
+                                foldTree acc dict (newNamespace key)
                 )
+                initialValue
+                dict
     in
         case tree of
             Branch dict ->
-                foldTree ( Dict.empty, "" ) dict
-                    |> Tuple.first
-                    |> Translations
+                foldTree Dict.empty dict ""
 
             _ ->
                 initialTranslations
@@ -90,7 +90,7 @@ mapTreeToDict tree =
     t "labels.greetings.hello" translations
 -}
 t : String -> Translations -> String
-t key (Translations translations) =
+t key translations =
     Dict.get key translations |> Maybe.withDefault key
 
 
@@ -100,7 +100,7 @@ t key (Translations translations) =
     tp config key replacements translations "labels.greetings.hello"
 -}
 tp : PlaceholderConfig -> String -> List String -> Translations -> String
-tp config key replacements (Translations translations) =
+tp config key replacements translations =
     Dict.get key translations |> Maybe.withDefault key
 
 
