@@ -60,15 +60,15 @@ view model =
 ### Using preloaded Translations
 
 If you don't need to load the translations, but for example already have them
-on the page as a string or JSON and pass them to the Elm programm as flags
+on the page as a string or JSON and pass them to the Elm programm as flags,
 you can just use the decoder on it and put it into the Model.
 
 In JS do:
 ```js
-// translation is a JSON string or JS object
+// translations is a JSON string or JS object
 Elm.YourApp.embed(someDomNode, translations);
 ```
-Then in elm you use them in the init function of your app.
+Then in elm, you use them in the init function of your app:
 ```elm
 import Json.Encode
 import Json.Decode
@@ -108,5 +108,5 @@ internationalization as existing solutions.
 
 ## Contributing
 
-If you want to contribute PRs are highly welcome. If you need a feature please
-open an issue or catch me in the elm slack channel.
+If you want to contribute, PRs are highly welcome. If you need a feature or want
+to share ideas, please open an issue or catch me in the elm slack channel.
