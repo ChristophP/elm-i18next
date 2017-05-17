@@ -78,7 +78,7 @@ import Json.Encode
 import Json.Decode
 import I18Next exposing (decodeTranslations)
 
-init: Json.Encode.Value -> (model, Cmd msg)
+init: Json.Encode.Value -> (Model, Cmd msg)
 init flags =
   let
     -- use Json.Decode.decodeString here instead if you are pasing the translations as a string
