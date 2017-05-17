@@ -27,9 +27,10 @@ type alias Model = {
 
 type Msg = TranslationsLoaded (Result Http.Error Translations)
 
-init = ({
-  translations = initialTranslations
-}, fetchTranslations TranslationsLoaded "http://awesome.com/locale/translation.en.json")
+init = (
+  { translations = initialTranslations }
+  , fetchTranslations TranslationsLoaded "http://awesome.com/locale/translation.en.json"
+  )
 
 update msg model =
   case msg of
