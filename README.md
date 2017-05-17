@@ -1,4 +1,4 @@
-# Elm i18next Client (Load and use JSON translations files at runtime)
+# Elm i18next - Load and use JSON translations files at runtime
 
 Functions for working with dynamically loaded translations in Elm. PRs and suggestions welcome.
 
