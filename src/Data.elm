@@ -8,10 +8,6 @@ type alias Replacements =
     List ( String, String )
 
 
-type alias PlaceholderConfig =
-    ( String, String )
-
-
 type alias Translations =
     Dict String String
 

@@ -10,6 +10,7 @@ import I18Next
     exposing
         ( decodeTranslations
         , Translations
+        , Delims(..)
         , t
         , tr
         , tf
@@ -133,15 +134,15 @@ translateWithPlaceholders =
     describe "the tr function"
         [ test "translates and replaces placeholders" <|
             \() ->
-                tr delims "greetings.goodDay" replacements translationsEn
+                tr Curly "greetings.goodDay" replacements translationsEn
                     |> Expect.equal "Good Day Peter Griffin"
         , test "tr does not replace if the match can't be found" <|
             \() ->
-                tr delims "greetings.goodDay" invalidReplacements translationsEn
+                tr Curly "greetings.goodDay" invalidReplacements translationsEn
                     |> Expect.equal "Good Day {{firstName}} {{lastName}}"
         , test "tr returns the key if it doesn not exists" <|
             \() ->
-                t "some.non-existing.key" translationsEn
+                tr Curly "some.non-existing.key" replacements translationsEn
                     |> Expect.equal "some.non-existing.key"
         ]
 
@@ -167,22 +168,22 @@ translateWithPlaceholdersAndFallback =
     describe "the trf function"
         [ test "uses the german when the key exists" <|
             \() ->
-                trf delims "greetings.hello" replacements langList
+                trf Curly "greetings.hello" replacements langList
                     |> Expect.equal "Hallo"
         , test "uses english as a fallback" <|
             \() ->
-                trf delims "englishOnly" replacements langList
+                trf Curly "englishOnly" replacements langList
                     |> Expect.equal "This key only exists in english"
         , test "uses the key if none is found" <|
             \() ->
-                trf delims "some.non-existing.key" replacements langList
+                trf Curly "some.non-existing.key" replacements langList
                     |> Expect.equal "some.non-existing.key"
         , test "translates and replaces in german when key is found" <|
             \() ->
-                trf delims "greetings.goodDay" replacements langList
+                trf Curly "greetings.goodDay" replacements langList
                     |> Expect.equal "Guten Tag Peter Griffin"
         , test "translates and replaces in fallback when key is not found" <|
             \() ->
-                trf delims "englishOnlyPlaceholder" replacements langList
+                trf Curly "englishOnlyPlaceholder" replacements langList
                     |> Expect.equal "Only english with Peter Griffin"
         ]

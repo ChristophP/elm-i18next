@@ -1,3 +1,4 @@
 elm-stuff/
 node_modules/
-public/elm.js
+/public/elm.js
+/documentation.json

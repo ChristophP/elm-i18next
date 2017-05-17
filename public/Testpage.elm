@@ -4,6 +4,7 @@ import Html exposing (program, Html, div, text)
 import I18Next
     exposing
         ( Translations
+        , Delims(..)
         , t
         , tr
         , fetchTranslations
@@ -46,8 +47,8 @@ view model =
         , div [] [ text ("t \"b.d\" = " ++ t "b.d" model.translations) ]
         , div []
             [ text
-                ("tr ( \"{\", \"}\" ) \"b.e.f\" [ ( \"firstname\", \"Peter\" ), ( \"lastname\", \"Lustig\" ) ]= "
-                    ++ tr ( "{", "}" ) "b.e.f" [ ( "firstname", "Peter" ), ( "lastname", "Lustig" ) ] model.translations
+                ("tr ( \"{{ \", \"}}\" ) \"b.e.f\" [ ( \"firstname\", \"Peter\" ), ( \"lastname\", \"Lustig\" ) ]= "
+                    ++ tr Curly "b.e.f" [ ( "firstname", "Peter" ), ( "lastname", "Lustig" ) ] model.translations
                 )
             ]
         , div [] [ text ("t \"notExisting\" = " ++ t "notExisting" model.translations) ]
