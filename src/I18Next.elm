@@ -20,7 +20,7 @@ needed.
 @docs Translations, Delims, Replacements, initialTranslations
 # Using Translations
 @docs t, tr, tf, trf
-# Fetching and Deconding
+# Fetching and Decoding
 @docs fetchTranslations, decodeTranslations
 -}
 
