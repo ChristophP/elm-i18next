@@ -34,7 +34,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model initialTranslations, fetchTranslations TranslationsLoaded "/public/locale/translations.en.json" )
+    ( Model initialTranslations, fetchTranslations TranslationsLoaded "/locale/translations.en.json" )
 
 
 view : Model -> Html msg
