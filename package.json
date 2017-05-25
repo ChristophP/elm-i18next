@@ -5,14 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "elm-live public/Testpage.elm --output=public/elm.js --dir=public -- --debug --warn",
-    "test": "elm-test"
+    "test": "elm-test --compiler ./node_modules/.bin/elm-make"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "elm": "^0.18.0",
     "elm-live": "^2.7.4",
-    "elm-test": "^0.18.2"
+    "elm-test": "0.18.2"
   },
   "dependencies": {}
 }
