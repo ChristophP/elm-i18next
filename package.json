@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "elm-live public/Testpage.elm --output=public/elm.js --dir=public -- --debug --warn",
-    "test": "elm-test --compiler $(which elm-make)"
+    "test": "elm-test --compiler $(node -r fs -p \"fs.realpathSync('node_modules/.bin/elm-make')\")"
   },
   "author": "",
   "license": "ISC",
