@@ -1,40 +1,54 @@
 module I18Next
     exposing
-        ( Translations
-        , Delims(..)
+        ( Delims(Curly, Custom, Underscore)
         , Replacements
-        , t
-        , tr
-        , tf
-        , trf
+        , Translations
+        , decodeTranslations
         , fetchTranslations
         , initialTranslations
-        , decodeTranslations
+        , t
+        , tf
+        , tr
+        , trf
         )
 
 {-| This library provides a solution to load and display translations in your
 app. It allows you to load json translation files, display the text and
 interpolate placeholders. There is also support for fallback languages if
 needed.
+
+
 # Types and Data
+
 @docs Translations, Delims, Replacements, initialTranslations
+
+
 # Using Translations
+
 @docs t, tr, tf, trf
+
+
 # Fetching and Decoding
+
 @docs fetchTranslations, decodeTranslations
+
 -}
 
 import Dict exposing (Dict)
-import Json.Decode as Decode exposing (Decoder)
 import Http exposing (Request)
-import Regex exposing (Regex, regex, replace, escape, HowMany(..))
-import Data exposing (Tree(..))
+import Json.Decode as Decode exposing (Decoder)
+import Regex exposing (HowMany(All), Regex, escape, regex, replace)
+
+
+type Tree
+    = Branch (Dict String Tree)
+    | Leaf String
 
 
 {-| A type that represents your loaded translations
 -}
 type Translations
-    = Translations Data.Translations
+    = Translations (Dict String String)
 
 
 {-| A union type for representing delimiters for placeholders. Most commonly
@@ -73,7 +87,6 @@ loading your JSON file via Http use
 After decoding nested values will be available with any of the translate
 functions separated with dots.
 
-
     {- The JSON could look like this:
     {
       "buttons": {
@@ -93,22 +106,23 @@ functions separated with dots.
 
     -- or on a Json.Encode.Value
     Json.Decode.decodeValue decodeTranslations encodedJson
+
 -}
 decodeTranslations : Decoder Translations
 decodeTranslations =
-    Decode.map mapTreeToDict decodeTree
+    Decode.map mapTreeToDict treeDecoder
 
 
-decodeTree : Decoder Tree
-decodeTree =
+treeDecoder : Decoder Tree
+treeDecoder =
     Decode.oneOf
         [ Decode.string |> Decode.map Leaf
         , Decode.lazy
-            (\_ -> (Decode.dict decodeTree |> Decode.map Branch))
+            (\_ -> Decode.dict treeDecoder |> Decode.map Branch)
         ]
 
 
-foldTree : Data.Translations -> Dict String Tree -> String -> Data.Translations
+foldTree : Dict String String -> Dict String Tree -> String -> Dict String String
 foldTree initialValue dict namespace =
     Dict.foldl
         (\key val acc ->
@@ -119,12 +133,12 @@ foldTree initialValue dict namespace =
                     else
                         namespace ++ "." ++ key
             in
-                case val of
-                    Leaf str ->
-                        Dict.insert (newNamespace key) str acc
+            case val of
+                Leaf str ->
+                    Dict.insert (newNamespace key) str acc
 
-                    Branch dict ->
-                        foldTree acc dict (newNamespace key)
+                Branch dict ->
+                    foldTree acc dict (newNamespace key)
         )
         initialValue
         dict
@@ -148,6 +162,7 @@ mapTreeToDict tree =
     -}
     import I18Next exposing (t)
     t translations "greet.hello" -- "Hello"
+
 -}
 t : Translations -> String -> String
 t (Translations translations) key =
@@ -160,19 +175,18 @@ placeholderRegex delims =
         ( startDelim, endDelim ) =
             delimsToTuple delims
     in
-        regex (escape startDelim ++ "(.*?)" ++ escape endDelim)
+    regex (escape startDelim ++ "(.*?)" ++ escape endDelim)
 
 
 replaceMatch : Replacements -> Regex.Match -> String
 replaceMatch replacements { match, submatches } =
     case submatches of
         maybeName :: _ ->
-            Maybe.andThen
-                (\name ->
-                    Dict.fromList replacements
-                        |> Dict.get name
-                )
-                maybeName
+            maybeName
+                |> Maybe.andThen
+                    (\name ->
+                        Dict.fromList replacements |> Dict.get name
+                    )
                 |> Maybe.withDefault match
 
         [] ->
@@ -200,6 +214,7 @@ Use this when you need to replace placeholders.
     -- If your translations are { "greet": "Hello {{name}}" }
     import I18Next exposing (tr, Delims(..))
     tr translations Curly "greet" [("name", "Peter")]
+
 -}
 tr : Translations -> Delims -> String -> Replacements -> String
 tr (Translations translations) delims key replacements =
@@ -221,6 +236,7 @@ of languages, the function will try each language in the list.
     will return the key. -}
     import I18Next exposing (tf)
     tf [germanTranslations, englishTranslations] "labels.greetings.hello"
+
 -}
 tf : List Translations -> String -> String
 tf translationsList key =
@@ -242,6 +258,7 @@ at the same time.
       langList = [germanTranslations, englishTranslations]
     in
       trf langList Curly "greet" [("name", "Peter")] -- "Hello Peter"
+
 -}
 trf : List Translations -> Delims -> String -> Replacements -> String
 trf translationsList delims key replacements =
