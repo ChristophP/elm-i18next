@@ -1,28 +1,28 @@
 module Main exposing (..)
 
-import Html exposing (program, label, button, text)
+import Html exposing (button, label, program, text)
+import Http
 import I18Next
     exposing
-        ( Translations
-        , Delims(..)
-        , initialTranslations
+        ( Delims(..)
+        , Translations
         , fetchTranslations
+        , initialTranslations
         , t
         , tr
         )
-import Http
 
 
 {-| For this example assume a remote translations file with this structure:
 """
-  {
-    "labels": {
-      "click-me": "Click Me",
-    },
-    "greetings: {
-      "hello": "Hello {{name}}"
-    }"
-  }
+{
+"labels": {
+"click-me": "Click Me",
+},
+"greetings: {
+"hello": "Hello {{name}}"
+}"
+}
 """
 }
 -}
@@ -72,6 +72,7 @@ view model =
     label []
         -- Use regular translations
         [ text (t model.translations "labels.click-me")
-          -- Use translations with placeholders
-        , button [] [ text (tr model.translations Curly "buttons.hello" [ ( "name", "Peter" ) ]) ]
+
+        -- Use translations with placeholders
+        , button [] [ text (tr model.translations Curly "greetings.hello" [ ( "name", "Peter" ) ]) ]
         ]
