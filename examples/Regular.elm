@@ -14,17 +14,18 @@ import I18Next
 
 
 {-| For this example assume a remote translations file with this structure:
+
 """
-{
-"labels": {
-"click-me": "Click Me",
-},
-"greetings: {
-"hello": "Hello {{name}}"
-}"
-}
+  {
+    "labels": {
+      "click-me": "Click Me"
+    },
+    "greetings": {
+      "hello": "Hello {{name}}"
+    }
+  }
 """
-}
+
 -}
 type alias Model =
     { translations : Translations
