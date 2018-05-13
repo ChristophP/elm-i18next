@@ -1,6 +1,6 @@
 module I18Next
     exposing
-        ( Delims(Curly, Custom, Underscore)
+        ( Delims(..)
         , Replacements
         , Translations
         , decodeTranslations
@@ -37,7 +37,6 @@ needed.
 import Dict exposing (Dict)
 import Http exposing (Request)
 import Json.Decode as Decode exposing (Decoder)
-import Regex exposing (HowMany(All), Regex, escape, regex, replace)
 
 
 type Tree
@@ -127,18 +126,18 @@ foldTree initialValue dict namespace =
     Dict.foldl
         (\key val acc ->
             let
-                newNamespace key =
+                newNamespace currentKey =
                     if String.isEmpty namespace then
-                        key
+                        currentKey
                     else
-                        namespace ++ "." ++ key
+                        namespace ++ "." ++ currentKey
             in
             case val of
                 Leaf str ->
                     Dict.insert (newNamespace key) str acc
 
-                Branch dict ->
-                    foldTree acc dict (newNamespace key)
+                Branch children ->
+                    foldTree acc children (newNamespace key)
         )
         initialValue
         dict
@@ -169,28 +168,18 @@ t (Translations translations) key =
     Dict.get key translations |> Maybe.withDefault key
 
 
-placeholderRegex : Delims -> Regex
-placeholderRegex delims =
+replacePlaceholders : Replacements -> Delims -> String -> String
+replacePlaceholders replacements delims string =
     let
-        ( startDelim, endDelim ) =
+        ( start, end ) =
             delimsToTuple delims
     in
-    regex (escape startDelim ++ "(.*?)" ++ escape endDelim)
-
-
-replaceMatch : Replacements -> Regex.Match -> String
-replaceMatch replacements { match, submatches } =
-    case submatches of
-        maybeName :: _ ->
-            maybeName
-                |> Maybe.andThen
-                    (\name ->
-                        Dict.fromList replacements |> Dict.get name
-                    )
-                |> Maybe.withDefault match
-
-        [] ->
-            match
+    List.foldl
+        (\( key, value ) acc ->
+            String.replace (start ++ key ++ end) value acc
+        )
+        string
+        replacements
 
 
 delimsToTuple : Delims -> ( String, String )
@@ -219,11 +208,7 @@ Use this when you need to replace placeholders.
 tr : Translations -> Delims -> String -> Replacements -> String
 tr (Translations translations) delims key replacements =
     Dict.get key translations
-        |> Maybe.map
-            (replace All
-                (placeholderRegex delims)
-                (replaceMatch replacements)
-            )
+        |> Maybe.map (replacePlaceholders replacements delims)
         |> Maybe.withDefault key
 
 
@@ -265,11 +250,7 @@ trf translationsList delims key replacements =
     case translationsList of
         (Translations translations) :: rest ->
             Dict.get key translations
-                |> Maybe.map
-                    (replace All
-                        (placeholderRegex delims)
-                        (replaceMatch replacements)
-                    )
+                |> Maybe.map (replacePlaceholders replacements delims)
                 |> Maybe.withDefault (trf rest delims key replacements)
 
         [] ->
