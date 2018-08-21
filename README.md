@@ -76,13 +76,13 @@ Then in elm, you use them in the init function of your app:
 ```elm
 import Json.Encode
 import Json.Decode
-import I18Next exposing (decodeTranslations)
+import I18Next exposing (translationsDecoder)
 
 init: Json.Encode.Value -> (Model, Cmd msg)
 init flags =
   let
     -- use Json.Decode.decodeString here instead if you are pasing the translations as a string
-    translationsResult = Json.Decode.decodeValue decodeTranslations flags
+    translationsResult = Json.Decode.decodeValue translationsDecoder flags
   in
     case translationsResult of
       Ok translations -> ({ model | translations = translations }, Cmd.none)
