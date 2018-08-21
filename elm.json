@@ -1,18 +1,15 @@
 {
-    "type": "package",
-    "name": "ChristophP/elm-i18next",
-    "summary": "Use this module to load, decode and use translations in your app",
-    "license": "BSD-3-Clause",
-    "version": "2.0.3",
-    "exposed-modules": [
-        "I18Next"
-    ],
-    "elm-version": "0.19.0 <= v < 0.20.0",
-    "dependencies": {
-        "elm/core": "1.0.0 <= v < 2.0.0",
-        "elm/html": "1.0.0 <= v < 2.0.0",
-        "elm/http": "1.0.0 <= v < 2.0.0",
-        "elm/json": "1.0.0 <= v < 2.0.0"
-    },
-    "test-dependencies": {}
+  "type": "package",
+  "name": "ChristophP/elm-i18next",
+  "summary": "Use this module to load, decode and use translations in your app",
+  "license": "BSD-3-Clause",
+  "version": "2.0.3",
+  "exposed-modules": ["I18Next"],
+  "elm-version": "0.19.0 <= v < 0.20.0",
+  "dependencies": {
+    "elm/core": "1.0.0 <= v < 2.0.0",
+    "elm/http": "1.0.0 <= v < 2.0.0",
+    "elm/json": "1.0.0 <= v < 2.0.0"
+  },
+  "test-dependencies": {}
 }

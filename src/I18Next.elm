@@ -1,16 +1,8 @@
-module I18Next
-    exposing
-        ( Delims(..)
-        , Replacements
-        , Translations
-        , decodeTranslations
-        , fetchTranslations
-        , initialTranslations
-        , t
-        , tf
-        , tr
-        , trf
-        )
+module I18Next exposing
+    ( Translations, Delims(..), Replacements, initialTranslations
+    , t, tr, tf, trf
+    , fetchTranslations, translationsDecoder
+    )
 
 {-| This library provides a solution to load and display translations in your
 app. It allows you to load json translation files, display the text and
@@ -30,7 +22,7 @@ needed.
 
 # Fetching and Decoding
 
-@docs fetchTranslations, decodeTranslations
+@docs fetchTranslations, translationsDecoder
 
 -}
 
@@ -100,15 +92,15 @@ functions separated with dots.
     -}
 
     --Use the decoder like this on a string
-    import I18Next exposing (decodeTranslations)
-    Json.Decode.decodeString decodeTranslations "{ \"greet\": \"Hello\" }"
+    import I18Next exposing (translationsDecoder)
+    Json.Decode.decodeString translationsDecoder "{ \"greet\": \"Hello\" }"
 
     -- or on a Json.Encode.Value
-    Json.Decode.decodeValue decodeTranslations encodedJson
+    Json.Decode.decodeValue translationsDecoder encodedJson
 
 -}
-decodeTranslations : Decoder Translations
-decodeTranslations =
+translationsDecoder : Decoder Translations
+translationsDecoder =
     Decode.map mapTreeToDict treeDecoder
 
 
@@ -129,6 +121,7 @@ foldTree initialValue dict namespace =
                 newNamespace currentKey =
                     if String.isEmpty namespace then
                         currentKey
+
                     else
                         namespace ++ "." ++ currentKey
             in
@@ -259,12 +252,12 @@ trf translationsList delims key replacements =
 
 translationRequest : String -> Request Translations
 translationRequest url =
-    Http.get url decodeTranslations
+    Http.get url translationsDecoder
 
 
 {-| A command to load translation files. It returns a result with the decoded
 translations, or an error if the request or decoding failed. See
-[`decodeTranslations`](I18Next#decodeTranslations) for an example of the correct
+[`translationsDecoder`](I18Next#translationsDecoder) for an example of the correct
 JSON format.
 -}
 fetchTranslations : (Result Http.Error Translations -> msg) -> String -> Cmd msg
