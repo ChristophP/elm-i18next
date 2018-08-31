@@ -7,6 +7,7 @@ module I18Next
         , fetchTranslations
         , initialTranslations
         , t
+        , tc
         , tf
         , tr
         , trf
@@ -133,12 +134,12 @@ foldTree initialValue dict namespace =
                     else
                         namespace ++ "." ++ key
             in
-            case val of
-                Leaf str ->
-                    Dict.insert (newNamespace key) str acc
+                case val of
+                    Leaf str ->
+                        Dict.insert (newNamespace key) str acc
 
-                Branch dict ->
-                    foldTree acc dict (newNamespace key)
+                    Branch dict ->
+                        foldTree acc dict (newNamespace key)
         )
         initialValue
         dict
@@ -169,13 +170,34 @@ t (Translations translations) key =
     Dict.get key translations |> Maybe.withDefault key
 
 
+{-| Translate a value at a given string, passing the category separately.
+This allows to output the key without the categories when no
+translation is available.
+
+    {- If your translations are { "greet": { "hello": "Hello" } }
+    use dots to access nested keys.
+    -}
+    import I18Next exposing (tc)
+    tc translations "greet" "hello" -- "Hello"
+
+    {- If no translation is available, only the last part of the key is output.
+    -}
+    import I18Next exposing (tc)
+    tc translations "greet" "hello" -- "hello"
+
+-}
+tc : Translations -> String -> String -> String
+tc (Translations translations) category key =
+    Dict.get (category ++ "." ++ key) translations |> Maybe.withDefault key
+
+
 placeholderRegex : Delims -> Regex
 placeholderRegex delims =
     let
         ( startDelim, endDelim ) =
             delimsToTuple delims
     in
-    regex (escape startDelim ++ "(.*?)" ++ escape endDelim)
+        regex (escape startDelim ++ "(.*?)" ++ escape endDelim)
 
 
 replaceMatch : Replacements -> Regex.Match -> String
