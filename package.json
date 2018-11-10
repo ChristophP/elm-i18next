@@ -4,15 +4,16 @@
   "description": "A client that loads translation files and translates strings",
   "main": "index.js",
   "scripts": {
-    "start": "elm-live public/Testpage.elm --output=public/elm.js --dir=public -- --debug --warn",
-    "test": "elm-test --compiler $(node -r fs -p \"fs.realpathSync('node_modules/.bin/elm-make')\")"
+    "dev": "npm test -- --watch",
+    "test": "elm-test --compiler node_modules/.bin/elm"
   },
-  "author": "",
+  "author": "Deedo P.",
   "license": "ISC",
   "devDependencies": {
-    "elm": "^0.18.0",
-    "elm-live": "^2.7.4",
-    "elm-test": "0.18.2"
+    "elm": "^0.19.0-bugfix2",
+    "elm-live": "^3.2.3",
+    "elm-test": "^0.19.0-beta12",
+    "request": "^2.88.0"
   },
   "dependencies": {}
 }
