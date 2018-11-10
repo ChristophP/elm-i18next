@@ -1,16 +1,8 @@
-module I18Next
-    exposing
-        ( Delims(Curly, Custom, Underscore)
-        , Replacements
-        , Translations
-        , decodeTranslations
-        , fetchTranslations
-        , initialTranslations
-        , t
-        , tf
-        , tr
-        , trf
-        )
+module I18Next exposing
+    ( Translations, Delims(..), Replacements, initialTranslations
+    , t, tr, tf, trf
+    , fetchTranslations, translationsDecoder
+    )
 
 {-| This library provides a solution to load and display translations in your
 app. It allows you to load json translation files, display the text and
@@ -30,14 +22,13 @@ needed.
 
 # Fetching and Decoding
 
-@docs fetchTranslations, decodeTranslations
+@docs fetchTranslations, translationsDecoder
 
 -}
 
 import Dict exposing (Dict)
 import Http exposing (Request)
 import Json.Decode as Decode exposing (Decoder)
-import Regex exposing (HowMany(All), Regex, escape, regex, replace)
 
 
 type Tree
@@ -101,15 +92,15 @@ functions separated with dots.
     -}
 
     --Use the decoder like this on a string
-    import I18Next exposing (decodeTranslations)
-    Json.Decode.decodeString decodeTranslations "{ \"greet\": \"Hello\" }"
+    import I18Next exposing (translationsDecoder)
+    Json.Decode.decodeString translationsDecoder "{ \"greet\": \"Hello\" }"
 
     -- or on a Json.Encode.Value
-    Json.Decode.decodeValue decodeTranslations encodedJson
+    Json.Decode.decodeValue translationsDecoder encodedJson
 
 -}
-decodeTranslations : Decoder Translations
-decodeTranslations =
+translationsDecoder : Decoder Translations
+translationsDecoder =
     Decode.map mapTreeToDict treeDecoder
 
 
@@ -127,18 +118,19 @@ foldTree initialValue dict namespace =
     Dict.foldl
         (\key val acc ->
             let
-                newNamespace key =
+                newNamespace currentKey =
                     if String.isEmpty namespace then
-                        key
+                        currentKey
+
                     else
-                        namespace ++ "." ++ key
+                        namespace ++ "." ++ currentKey
             in
             case val of
                 Leaf str ->
                     Dict.insert (newNamespace key) str acc
 
-                Branch dict ->
-                    foldTree acc dict (newNamespace key)
+                Branch children ->
+                    foldTree acc children (newNamespace key)
         )
         initialValue
         dict
@@ -169,28 +161,18 @@ t (Translations translations) key =
     Dict.get key translations |> Maybe.withDefault key
 
 
-placeholderRegex : Delims -> Regex
-placeholderRegex delims =
+replacePlaceholders : Replacements -> Delims -> String -> String
+replacePlaceholders replacements delims string =
     let
-        ( startDelim, endDelim ) =
+        ( start, end ) =
             delimsToTuple delims
     in
-    regex (escape startDelim ++ "(.*?)" ++ escape endDelim)
-
-
-replaceMatch : Replacements -> Regex.Match -> String
-replaceMatch replacements { match, submatches } =
-    case submatches of
-        maybeName :: _ ->
-            maybeName
-                |> Maybe.andThen
-                    (\name ->
-                        Dict.fromList replacements |> Dict.get name
-                    )
-                |> Maybe.withDefault match
-
-        [] ->
-            match
+    List.foldl
+        (\( key, value ) acc ->
+            String.replace (start ++ key ++ end) value acc
+        )
+        string
+        replacements
 
 
 delimsToTuple : Delims -> ( String, String )
@@ -219,11 +201,7 @@ Use this when you need to replace placeholders.
 tr : Translations -> Delims -> String -> Replacements -> String
 tr (Translations translations) delims key replacements =
     Dict.get key translations
-        |> Maybe.map
-            (replace All
-                (placeholderRegex delims)
-                (replaceMatch replacements)
-            )
+        |> Maybe.map (replacePlaceholders replacements delims)
         |> Maybe.withDefault key
 
 
@@ -265,11 +243,7 @@ trf translationsList delims key replacements =
     case translationsList of
         (Translations translations) :: rest ->
             Dict.get key translations
-                |> Maybe.map
-                    (replace All
-                        (placeholderRegex delims)
-                        (replaceMatch replacements)
-                    )
+                |> Maybe.map (replacePlaceholders replacements delims)
                 |> Maybe.withDefault (trf rest delims key replacements)
 
         [] ->
@@ -278,12 +252,12 @@ trf translationsList delims key replacements =
 
 translationRequest : String -> Request Translations
 translationRequest url =
-    Http.get url decodeTranslations
+    Http.get url translationsDecoder
 
 
 {-| A command to load translation files. It returns a result with the decoded
 translations, or an error if the request or decoding failed. See
-[`decodeTranslations`](I18Next#decodeTranslations) for an example of the correct
+[`translationsDecoder`](I18Next#translationsDecoder) for an example of the correct
 JSON format.
 -}
 fetchTranslations : (Result Http.Error Translations -> msg) -> String -> Cmd msg
