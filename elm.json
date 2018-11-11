@@ -1,9 +1,9 @@
 {
     "type": "package",
     "name": "ChristophP/elm-i18next",
-    "summary": "Use this module to load, decode and use translations in your app",
+    "summary": "A module to load, decode and use translations in your app",
     "license": "BSD-3-Clause",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "exposed-modules": [
         "I18Next"
     ],
@@ -13,5 +13,7 @@
         "elm/http": "1.0.0 <= v < 2.0.0",
         "elm/json": "1.0.0 <= v < 2.0.0"
     },
-    "test-dependencies": {}
+    "test-dependencies": {
+        "elm-explorations/test": "1.1.0 <= v < 2.0.0"
+    }
 }

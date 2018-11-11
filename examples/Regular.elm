@@ -1,6 +1,7 @@
-module Main exposing (..)
+module Main exposing (Model, Msg(..), init, main, update, view)
 
-import Html exposing (button, label, program, text)
+import Browser
+import Html exposing (button, label, text)
 import Http
 import I18Next
     exposing
@@ -16,14 +17,14 @@ import I18Next
 {-| For this example assume a remote translations file with this structure:
 
 """
-  {
-    "labels": {
-      "click-me": "Click Me"
-    },
-    "greetings": {
-      "hello": "Hello {{name}}"
-    }
-  }
+{
+"labels": {
+"click-me": "Click Me"
+},
+"greetings": {
+"hello": "Hello {{name}}"
+}
+}
 """
 
 -}
@@ -38,7 +39,7 @@ type Msg
 
 
 main =
-    program
+    Browser.document
         { init = init
         , update = update
         , view = view
@@ -48,11 +49,11 @@ main =
 
 {-| Fetch the translations from some endpoint
 -}
-init =
+init _ =
     ( Model initialTranslations Nothing
     , fetchTranslations
         TranslationsLoaded
-        "http://assets.someI18n/locale/translations.en.json"
+        "https://assets.someI18n/locale/translations.en.json"
     )
 
 
@@ -70,10 +71,12 @@ update msg model =
 {-| Use the translations in your view with or without placeholders
 -}
 view model =
-    label []
-        -- Use regular translations
-        [ text (t model.translations "labels.click-me")
+    Browser.Document "I18Next example"
+        [ label []
+            -- Use regular translations
+            [ text (t model.translations "labels.click-me")
 
-        -- Use translations with placeholders
-        , button [] [ text (tr model.translations Curly "greetings.hello" [ ( "name", "Peter" ) ]) ]
+            -- Use translations with placeholders
+            , button [] [ text (tr model.translations Curly "greetings.hello" [ ( "name", "Peter" ) ]) ]
+            ]
         ]

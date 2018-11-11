@@ -70,7 +70,7 @@ you can just use the decoder on it and put it into the Model.
 In JS do:
 ```js
 // translations is a JSON string or JS object
-Elm.YourApp.embed(someDomNode, translations);
+Elm.Main.init({ flags: translations });
 ```
 Then in elm, you use them in the init function of your app:
 ```elm

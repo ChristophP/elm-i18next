@@ -1,23 +1,20 @@
-module Tests exposing (..)
+module Tests exposing (all)
 
-import Test exposing (..)
 import Expect
-import Fuzz exposing (list, int, tuple, string)
-import String
-import Json.Decode as Decode
-import Dict
 import I18Next
     exposing
-        ( decodeTranslations
-        , Translations
-        , Delims(..)
+        ( Delims(..)
         , Replacements
-        , t
-        , tr
-        , tf
-        , trf
+        , Translations
         , initialTranslations
+        , t
+        , tf
+        , tr
+        , translationsDecoder
+        , trf
         )
+import Json.Decode as Decode
+import Test exposing (..)
 
 
 translationJsonEn : String
@@ -57,13 +54,13 @@ invalidTranslationJson =
 
 translationsEn : Translations
 translationsEn =
-    Decode.decodeString decodeTranslations translationJsonEn
+    Decode.decodeString translationsDecoder translationJsonEn
         |> Result.withDefault initialTranslations
 
 
 translationsDe : Translations
 translationsDe =
-    Decode.decodeString decodeTranslations translationJsonDe
+    Decode.decodeString translationsDecoder translationJsonDe
         |> Result.withDefault initialTranslations
 
 
@@ -90,43 +87,35 @@ invalidReplacements =
 
 all : Test
 all =
-    describe "Translations Test"
-        [ describe "decodeTranslations"
-            [ test "decodes a translation JSON" <|
-                \() ->
-                    case Decode.decodeString decodeTranslations translationJsonEn of
-                        Ok _ ->
-                            Expect.pass
-
-                        Err err ->
-                            Expect.fail err
-              --(Translations translations) ->
-              --Expect.equal translations
-              --Dict.fromList
-              --[ ( "buttons.save", "Save" )
-              --, ( "buttons.cancel", "Cancel" )
-              --, ( "greetings.hello", "Hello" )
-              --, ( "greetings.goodDay", "Guten Tag {{firstName}} {{lastName}}" )
-              --]
-            , decode
-            , translate
-            , translateWithPlaceholders
-            , translateWithFallback
-            , translateWithPlaceholdersAndFallback
-            ]
+    describe "The I18Next Module"
+        [ decode
+        , translate
+        , translateWithPlaceholders
+        , translateWithFallback
+        , translateWithPlaceholdersAndFallback
         ]
 
 
 decode : Test
 decode =
-    test "fails if it gets an invalid translations JSON" <|
-        \() ->
-            case Decode.decodeString decodeTranslations invalidTranslationJson of
-                Ok _ ->
-                    Expect.fail "Decoding passed but should have failed."
+    describe "translationsDecoder"
+        [ test "decodes a translation JSON" <|
+            \() ->
+                case Decode.decodeString translationsDecoder translationJsonEn of
+                    Ok _ ->
+                        Expect.pass
 
-                Err err ->
-                    Expect.pass
+                    Err err ->
+                        Expect.fail <| Decode.errorToString err
+        , test "fails if it gets an invalid translations JSON" <|
+            \() ->
+                case Decode.decodeString translationsDecoder invalidTranslationJson of
+                    Ok _ ->
+                        Expect.fail "Decoding passed but should have failed."
+
+                    Err err ->
+                        Expect.pass
+        ]
 
 
 translate : Test
