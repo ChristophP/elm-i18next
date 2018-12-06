@@ -1,6 +1,7 @@
 module I18Next exposing
     ( Translations, Delims(..), Replacements, initialTranslations
     , t, tr, tf, trf
+    , keys, diff
     , fetchTranslations, translationsDecoder
     )
 
@@ -18,6 +19,11 @@ needed.
 # Using Translations
 
 @docs t, tr, tf, trf
+
+
+# Comparing Translations
+
+@docs keys, diff
 
 
 # Fetching and Decoding
@@ -248,6 +254,27 @@ trf translationsList delims key replacements =
 
         [] ->
             key
+
+
+{-| Given a set of Translations return a list of the translation keys which are
+defined by the Translations. Useful for comparing those against a list of keys
+actually used in the application.
+-}
+keys : Translations -> List String
+keys translations =
+    case translations of
+        Translations d ->
+            Dict.keys d
+
+
+{-| Returns the keys that are defined in the first translation but not the second
+this is useful for determining which keys need to be translated.
+-}
+diff : Translations -> Translations -> List String
+diff left right =
+    case ( left, right ) of
+        ( Translations leftD, Translations rightD ) ->
+            Dict.diff leftD rightD |> Dict.keys
 
 
 translationRequest : String -> Request Translations
