@@ -14,6 +14,7 @@ import I18Next
         , trf
         )
 import Json.Decode as Decode
+import Set exposing (Set)
 import Test exposing (..)
 
 
@@ -33,6 +34,18 @@ translationJsonEn =
   }"""
 
 
+expectedKeysEn : Set String
+expectedKeysEn =
+    Set.fromList
+        [ "buttons.save"
+        , "buttons.cancel"
+        , "greetings.hello"
+        , "greetings.goodDay"
+        , "englishOnly"
+        , "englishOnlyPlaceholder"
+        ]
+
+
 translationJsonDe : String
 translationJsonDe =
     """{
@@ -45,6 +58,21 @@ translationJsonDe =
       "goodDay": "Guten Tag {{firstName}} {{lastName}}"
     }
   }"""
+
+
+expectedKeysDe : Set String
+expectedKeysDe =
+    Set.fromList
+        [ "buttons.save"
+        , "buttons.cancel"
+        , "greetings.hello"
+        , "greetings.goodDay"
+        ]
+
+
+expectedMissingKeysDe : Set String
+expectedMissingKeysDe =
+    Set.diff expectedKeysEn expectedKeysDe
 
 
 invalidTranslationJson : String
@@ -93,6 +121,7 @@ all =
         , translateWithPlaceholders
         , translateWithFallback
         , translateWithPlaceholdersAndFallback
+        , compareTranslations
         ]
 
 
@@ -190,4 +219,36 @@ translateWithPlaceholdersAndFallback =
             \() ->
                 trf langList Curly "englishOnlyPlaceholder" replacements
                     |> Expect.equal "Only english with Peter Griffin"
+        ]
+
+
+keysOfTranslation : Test
+keysOfTranslation =
+    describe "The keys function"
+        [ test "Checks the list of keys defined in the English translations" <|
+            \() ->
+                I18Next.keys translationsEn
+                    |> Set.fromList
+                    |> Expect.equalSets expectedKeysEn
+        , test "Checks the list of keys defined in the German translations" <|
+            \() ->
+                I18Next.keys translationsDe
+                    |> Set.fromList
+                    |> Expect.equalSets expectedKeysEn
+        ]
+
+
+compareTranslations : Test
+compareTranslations =
+    describe "The diff function"
+        [ test "Checks that if we diff the English and German translations we get the set of englishOnly keys." <|
+            \() ->
+                I18Next.diff translationsEn translationsDe
+                    |> Set.fromList
+                    |> Expect.equalSets expectedMissingKeysDe
+        , test "Checks that if we diff the German and English translations we get the empty set of keys." <|
+            \() ->
+                I18Next.diff translationsDe translationsEn
+                    |> Set.fromList
+                    |> Expect.equalSets Set.empty
         ]
