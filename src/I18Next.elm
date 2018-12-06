@@ -188,8 +188,8 @@ delimsToTuple delims =
             tuple
 
 
-{-| Translate a value at a key, while replacing placeholders, and trying
-different fallback languages. Check the [`Delims`](I18Next#Delims) type for
+{-| Translate a value at a key, while replacing placeholders.
+Check the [`Delims`](I18Next#Delims) type for
 reference how to specify placeholder delimiters.
 Use this when you need to replace placeholders.
 
@@ -209,7 +209,7 @@ tr (Translations translations) delims key replacements =
 of Translations. If the key you provide does not exist in the first of the list
 of languages, the function will try each language in the list.
 
-    {- Will use german if the key exist there, or fall back to english
+    {- Will use german if the key exists there, or fall back to english
     if not. If the key is not in any of the provided languages the function
     will return the key. -}
     import I18Next exposing (tf)
