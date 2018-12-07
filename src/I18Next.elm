@@ -1,7 +1,7 @@
 module I18Next exposing
     ( Translations, Delims(..), Replacements, initialTranslations
     , t, tr, tf, trf
-    , fetchTranslations, translationsDecoder
+    , translationsDecoder
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -20,14 +20,13 @@ needed.
 @docs t, tr, tf, trf
 
 
-# Fetching and Decoding
+# Decoding
 
-@docs fetchTranslations, translationsDecoder
+@docs translationsDecoder
 
 -}
 
 import Dict exposing (Dict)
-import Http exposing (Request)
 import Json.Decode as Decode exposing (Decoder)
 
 
@@ -248,18 +247,3 @@ trf translationsList delims key replacements =
 
         [] ->
             key
-
-
-translationRequest : String -> Request Translations
-translationRequest url =
-    Http.get url translationsDecoder
-
-
-{-| A command to load translation files. It returns a result with the decoded
-translations, or an error if the request or decoding failed. See
-[`translationsDecoder`](I18Next#translationsDecoder) for an example of the correct
-JSON format.
--}
-fetchTranslations : (Result Http.Error Translations -> msg) -> String -> Cmd msg
-fetchTranslations msg url =
-    Http.send msg (translationRequest url)
