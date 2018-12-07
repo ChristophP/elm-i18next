@@ -71,9 +71,7 @@ initialTranslations =
 
 {-| Decode a JSON translations file. The JSON can be arbitrarly nested, but the
 leaf values can only be strings. Use this decoder directly if you are passing
-the translations JSON into your elm app via flags or ports. If you are
-loading your JSON file via Http use
-[`fetchTranslations`](I18Next#fetchTranslations) instead.
+the translations JSON into your elm app via flags or ports.
 After decoding nested values will be available with any of the translate
 functions separated with dots.
 
