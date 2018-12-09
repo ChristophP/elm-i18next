@@ -2,6 +2,7 @@ module I18Next exposing
     ( Translations, Delims(..), Replacements, initialTranslations
     , t, tr, tf, trf
     , translationsDecoder
+    , toDict
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -67,6 +68,15 @@ your translations are fetched.
 initialTranslations : Translations
 initialTranslations =
     Translations Dict.empty
+
+
+{-| Use this to obtain a dictionary mapping the translation keys to their translations.
+From this it is simple to, for example, compare two translations for keys defined in one
+but not the other.
+-}
+toDict : Translations -> Dict String String
+toDict (Translations dict) =
+    dict
 
 
 {-| Decode a JSON translations file. The JSON can be arbitrarly nested, but the
