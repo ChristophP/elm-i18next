@@ -56,11 +56,10 @@ init () =
             ( Model translations Nothing, Cmd.none )
 
         Err err ->
-            Debug.log "Peter"
-                ( Model initialTranslations
-                    (Just ("OMG couldn't load Translations: " ++ JD.errorToString err))
-                , Cmd.none
-                )
+            ( Model initialTranslations
+                (Just ("OMG couldn't load Translations: " ++ JD.errorToString err))
+            , Cmd.none
+            )
 
 
 {-| Use the translations in your view with or without placeholders

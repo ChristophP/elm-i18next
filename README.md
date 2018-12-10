@@ -5,41 +5,44 @@ PRs and suggestions welcome.
 
 ## Simple Example
 
-```elm package install ChristophP/elm-i18next```
+```elm install ChristophP/elm-i18next```
 
 Then use the module in your app like this.
 
+In JS do:
+```js
+// translations is a JSON string or JS object
+Elm.Main.init({ flags: translations });
+```
+
+Then in elm, you use them in the init function of your app:
+
 ```elm
-import Http
 import Html exposing (Html)
 import I18Next exposing
       ( t
       , tr
       , Translations
       , Delims(..)
-      , initialTranslations
-      , fetchTranslations
+      , translationsDecoder
       )
+import Json.Encode
+import Json.Decode
 
 type alias Model = {
   translations: Translations
 }
 
-type Msg = TranslationsLoaded (Result Http.Error Translations)
+type Msg = ..
 
-init : (Model, Cmd Msg)
-init = (
-  { translations = initialTranslations }
-  , fetchTranslations TranslationsLoaded "http://awesome.com/locale/translation.en.json"
-  )
+init: Json.Encode.Value -> (Model, Cmd msg)
+init flags = ({ translations = initialTranslations } , Cmd.none)
+    case JD.decodeValue translationsDecoder flags of
+        Ok translations ->
+            ( Model translations, Cmd.none )
 
-update : Msg -> Model -> Model
-update msg model =
-  case msg of
-    TranslationsLoaded (Ok translations) ->
-      { model | translations = translations }
-    TranslationsLoaded (Err msg) ->
-      ...
+        Err err ->
+            -- handle the error
 
 {- Imagine your translations file looks like this:
   {
@@ -55,39 +58,18 @@ view : Model -> Html Msg
 view model =
     div []
         [ div [] [ text (t model.translations "hello") ] -- "Hallo"
-        , div [] [ text (t model.translations "greetings.goodDay") ] -- "Good day."
+        ,  div [] [ text (t model.translations "greetings.goodDay") ] -- "Good day."
         , div [] [ text (t model.translations "nonExistingKey") ] -- "nonExistingKey"
         , div [] [ text (tr model.translations Curly "greetings.greetName" [("name", "Peter")]) ] -- "Hi Peter"
         ]
 ```
 
-### Using preloaded Translations
+Check out more complete examples [here](https://github.com/ChristophP/elm-i18next/tree/master/examples)
 
-If you don't need to load the translations, but for example already have them
-on the page as a string or JSON and pass them to the Elm programm as flags,
-you can just use the decoder on it and put it into the Model.
+### Fetching Translations
 
-In JS do:
-```js
-// translations is a JSON string or JS object
-Elm.Main.init({ flags: translations });
-```
-Then in elm, you use them in the init function of your app:
-```elm
-import Json.Encode
-import Json.Decode
-import I18Next exposing (translationsDecoder)
-
-init: Json.Encode.Value -> (Model, Cmd msg)
-init flags =
-  let
-    -- use Json.Decode.decodeString here instead if you are pasing the translations as a string
-    translationsResult = Json.Decode.decodeValue translationsDecoder flags
-  in
-    case translationsResult of
-      Ok translations -> ({ model | translations = translations }, Cmd.none)
-      Err err -> ... -- handle the error or use `Result.withDefault`
-```
+If you can't pass the translations as flags but want to fetch them from Elm code
+instead do the same as in the simple example but apply the decoder to the Http call.
 
 ### Advanced Stuff: Placeholders and fallback languages
 
