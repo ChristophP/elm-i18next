@@ -1,6 +1,5 @@
 {
   "name": "elm-i18next-client",
-  "version": "1.0.0",
   "description": "A client that loads translation files and translates strings",
   "main": "index.js",
   "scripts": {

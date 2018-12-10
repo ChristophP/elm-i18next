@@ -6,7 +6,9 @@ import I18Next
         ( Delims(..)
         , Replacements
         , Translations
+        , hasKey
         , initialTranslations
+        , keys
         , t
         , tf
         , tr
@@ -14,6 +16,7 @@ import I18Next
         , trf
         )
 import Json.Decode as Decode
+import Set
 import Test exposing (..)
 
 
@@ -93,6 +96,7 @@ all =
         , translateWithPlaceholders
         , translateWithFallback
         , translateWithPlaceholdersAndFallback
+        , inspecting
         ]
 
 
@@ -190,4 +194,36 @@ translateWithPlaceholdersAndFallback =
             \() ->
                 trf langList Curly "englishOnlyPlaceholder" replacements
                     |> Expect.equal "Only english with Peter Griffin"
+        ]
+
+
+inspecting : Test
+inspecting =
+    let
+        containedKeys =
+            [ "buttons.save"
+            , "buttons.cancel"
+            , "greetings.hello"
+            , "greetings.goodDay"
+            ]
+    in
+    describe "inspecting"
+        [ describe "keys" <|
+            [ test "gets the keys of the contained translations" <|
+                \() ->
+                    -- use Sets because the key order is undetermined
+                    keys translationsDe
+                        |> Set.fromList
+                        |> Expect.equal (Set.fromList containedKeys)
+            ]
+        , describe "hasKey"
+            [ test "is true when key is contained" <|
+                \() ->
+                    hasKey translationsDe "greetings.hello"
+                        |> Expect.true "key should be contained but isn't"
+            , test "is false when key is not contained" <|
+                \() ->
+                    hasKey translationsDe "some.key.that.doesnt.exist"
+                        |> Expect.false "key should not be contained but is"
+            ]
         ]

@@ -1,8 +1,8 @@
 module I18Next exposing
     ( Translations, Delims(..), Replacements, initialTranslations
-    , t, tr, tf, trf
     , translationsDecoder
-    , toDict
+    , t, tr, tf, trf
+    , keys, hasKey
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -11,19 +11,34 @@ interpolate placeholders. There is also support for fallback languages if
 needed.
 
 
-# Types and Data
+## Types and Data
 
 @docs Translations, Delims, Replacements, initialTranslations
 
 
-# Using Translations
+## Decoding
+
+Turn your JSON into translations.
+
+@docs translationsDecoder
+
+
+## Using Translations
+
+Get translated values by key straight away, with replacements, fallback languages
+or both.
 
 @docs t, tr, tf, trf
 
 
-# Decoding
+## Inspecting
 
-@docs translationsDecoder
+You probably won't need these functions for regular applications if you just
+want to translate some strings. But if you are looking to build a translations
+editor you might want to query some information about the contents of the
+translations.
+
+@docs keys, hasKey
 
 -}
 
@@ -70,13 +85,22 @@ initialTranslations =
     Translations Dict.empty
 
 
-{-| Use this to obtain a dictionary mapping the translation keys to their translations.
+{-| Use this to obtain a list of keys that are contained in the translations.
 From this it is simple to, for example, compare two translations for keys defined in one
-but not the other.
+but not the other. The order of the keys is arbitrary and should not be relied
+on.
 -}
-toDict : Translations -> Dict String String
-toDict (Translations dict) =
-    dict
+keys : Translations -> List String
+keys (Translations dict) =
+    Dict.keys dict
+
+
+{-| This function lets you check whether a certain key is exists in your
+translations.
+-}
+hasKey : Translations -> String -> Bool
+hasKey (Translations dict) key =
+    Dict.member key dict
 
 
 {-| Decode a JSON translations file. The JSON can be arbitrarly nested, but the
