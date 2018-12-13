@@ -42,7 +42,6 @@ translations.
 
 -}
 
-import Array exposing (Array)
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 
