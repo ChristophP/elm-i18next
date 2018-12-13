@@ -42,6 +42,7 @@ translations.
 
 -}
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 
@@ -49,6 +50,7 @@ import Json.Decode as Decode exposing (Decoder)
 type Tree
     = Branch (Dict String Tree)
     | Leaf String
+    | Twig (List String)
 
 
 {-| A type that represents your loaded translations
@@ -139,9 +141,19 @@ treeDecoder : Decoder Tree
 treeDecoder =
     Decode.oneOf
         [ Decode.string |> Decode.map Leaf
+        , Decode.list Decode.string |> Decode.map Twig
         , Decode.lazy
             (\_ -> Decode.dict treeDecoder |> Decode.map Branch)
         ]
+
+
+listToChildren : List String -> Dict String Tree
+listToChildren list =
+    let
+        stringifiedTupleList =
+            List.map (\( i, v ) -> ( String.fromInt i, Leaf v )) (List.indexedMap Tuple.pair list)
+    in
+    Dict.fromList stringifiedTupleList
 
 
 foldTree : Dict String String -> Dict String Tree -> String -> Dict String String
@@ -152,11 +164,13 @@ foldTree initialValue dict namespace =
                 newNamespace currentKey =
                     if String.isEmpty namespace then
                         currentKey
-
                     else
                         namespace ++ "." ++ currentKey
             in
             case val of
+                Twig list ->
+                    foldTree acc (listToChildren list) (newNamespace key)
+
                 Leaf str ->
                     Dict.insert (newNamespace key) str acc
 

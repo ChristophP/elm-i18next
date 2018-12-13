@@ -27,6 +27,7 @@ translationJsonEn =
       "save": "Save",
       "cancel": "Cancel"
     },
+    "numbers": ["Zero", "One"],
     "greetings": {
       "hello": "Hello",
       "goodDay": "Good Day {{firstName}} {{lastName}}"
@@ -43,6 +44,7 @@ translationJsonDe =
       "save": "Speichern",
       "cancel": "Abbrechen"
     },
+    "numbers": ["Null", "Eins"],
     "greetings": {
       "hello": "Hallo",
       "goodDay": "Guten Tag {{firstName}} {{lastName}}"
@@ -132,6 +134,10 @@ translate =
             \() ->
                 t translationsEn "some.non-existing.key"
                     |> Expect.equal "some.non-existing.key"
+        , test "returns the translation for keys representing array indexes" <|
+            \() ->
+                t translationsEn "numbers.1"
+                    |> Expect.equal "One"
         ]
 
 
@@ -205,6 +211,8 @@ inspecting =
             , "buttons.cancel"
             , "greetings.hello"
             , "greetings.goodDay"
+            , "numbers.0"
+            , "numbers.1"
             ]
     in
     describe "inspecting"
