@@ -1,5 +1,5 @@
 module I18Next exposing
-    ( Translations, Delims(..), Replacements, initialTranslations
+    ( Translations(..), Delims(..), Replacements, initialTranslations
     , translationsDecoder
     , t, tr, tf, trf
     , keys, hasKey
