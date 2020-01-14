@@ -3,7 +3,7 @@ module I18Next exposing
     , translationsDecoder
     , t, tr, tf, trf
     , keys, hasKey
-    , Tree, string, object, fromTree
+    , Tree, fromTree, string, object
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -48,7 +48,7 @@ Most of the time you'll load your translations as JSON form a server, but there
 may be times, when you want to build translations in your code. The following
 functions let you build a `Translations` value programmatically.
 
-@docs Tree, string, object, fromTree
+@docs Tree, fromTree, string, object
 
 -}
 
