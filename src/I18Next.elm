@@ -134,7 +134,7 @@ functions separated with dots.
 translationsDecoder : Decoder Translations
 translationsDecoder =
     Decode.dict treeDecoder
-        |> Decode.map (foldTree >> Translations)
+        |> Decode.map (flattenTranslations >> Translations)
 
 
 treeDecoder : Decoder Tree
@@ -146,13 +146,13 @@ treeDecoder =
         ]
 
 
-foldTree : Dict String Tree -> Dict String String
-foldTree dict =
-    foldTreeHelp Dict.empty "" dict
+flattenTranslations : Dict String Tree -> Dict String String
+flattenTranslations dict =
+    foldTree Dict.empty "" dict
 
 
-foldTreeHelp : Dict String String -> String -> Dict String Tree -> Dict String String
-foldTreeHelp initialValue namespace dict =
+foldTree : Dict String String -> String -> Dict String Tree -> Dict String String
+foldTree initialValue namespace dict =
     Dict.foldl
         (\key val acc ->
             let
@@ -168,7 +168,7 @@ foldTreeHelp initialValue namespace dict =
                     Dict.insert (newNamespace key) str acc
 
                 Branch children ->
-                    foldTreeHelp acc (newNamespace key) children
+                    foldTree acc (newNamespace key) children
         )
         initialValue
         dict
@@ -295,4 +295,4 @@ object =
 -}
 fromTree : List ( String, Tree ) -> Translations
 fromTree list =
-    Translations (foldTree (Dict.fromList list))
+    Translations (flattenTranslations (Dict.fromList list))
