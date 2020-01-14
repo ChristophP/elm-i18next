@@ -3,6 +3,7 @@ module I18Next exposing
     , translationsDecoder
     , t, tr, tf, trf
     , keys, hasKey
+    , Tree, fromTree, string, object
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -40,12 +41,25 @@ translations.
 
 @docs keys, hasKey
 
+
+## Custom Building Translations
+
+Most of the time you'll load your translations as JSON form a server, but there
+may be times, when you want to build translations in your code. The following
+functions let you build a `Translations` value programmatically.
+
+@docs Tree, fromTree, string, object
+
 -}
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 
 
+{-| A type representing a hierarchy of nested translations. You'll only ever
+deal with this type directly, if you're using
+[`string`](I18Next#string) and [`object`](I18Next#object).
+-}
 type Tree
     = Branch (Dict String Tree)
     | Leaf String
@@ -104,7 +118,7 @@ hasKey (Translations dict) key =
 
 
 {-| Decode a JSON translations file. The JSON can be arbitrarly nested, but the
-leaf values can only be strings. Use this decoder directly if you are passing
+leaf values can only be strings. Use this decoder directly, if you are passing
 the translations JSON into your elm app via flags or ports.
 After decoding nested values will be available with any of the translate
 functions separated with dots.
@@ -132,7 +146,8 @@ functions separated with dots.
 -}
 translationsDecoder : Decoder Translations
 translationsDecoder =
-    Decode.map mapTreeToDict treeDecoder
+    Decode.dict treeDecoder
+        |> Decode.map (flattenTranslations >> Translations)
 
 
 treeDecoder : Decoder Tree
@@ -144,8 +159,13 @@ treeDecoder =
         ]
 
 
-foldTree : Dict String String -> Dict String Tree -> String -> Dict String String
-foldTree initialValue dict namespace =
+flattenTranslations : Dict String Tree -> Dict String String
+flattenTranslations dict =
+    flattenTranslationsHelp Dict.empty "" dict
+
+
+flattenTranslationsHelp : Dict String String -> String -> Dict String Tree -> Dict String String
+flattenTranslationsHelp initialValue namespace dict =
     Dict.foldl
         (\key val acc ->
             let
@@ -161,21 +181,10 @@ foldTree initialValue dict namespace =
                     Dict.insert (newNamespace key) str acc
 
                 Branch children ->
-                    foldTree acc children (newNamespace key)
+                    flattenTranslationsHelp acc (newNamespace key) children
         )
         initialValue
         dict
-
-
-mapTreeToDict : Tree -> Translations
-mapTreeToDict tree =
-    case tree of
-        Branch dict ->
-            foldTree Dict.empty dict ""
-                |> Translations
-
-        _ ->
-            initialTranslations
 
 
 {-| Translate a value at a given string.
@@ -193,7 +202,7 @@ t (Translations translations) key =
 
 
 replacePlaceholders : Replacements -> Delims -> String -> String
-replacePlaceholders replacements delims string =
+replacePlaceholders replacements delims str =
     let
         ( start, end ) =
             delimsToTuple delims
@@ -202,7 +211,7 @@ replacePlaceholders replacements delims string =
         (\( key, value ) acc ->
             String.replace (start ++ key ++ end) value acc
         )
-        string
+        str
         replacements
 
 
@@ -231,9 +240,12 @@ Use this when you need to replace placeholders.
 -}
 tr : Translations -> Delims -> String -> Replacements -> String
 tr (Translations translations) delims key replacements =
-    Dict.get key translations
-        |> Maybe.map (replacePlaceholders replacements delims)
-        |> Maybe.withDefault key
+    case Dict.get key translations of
+        Just str ->
+            replacePlaceholders replacements delims str
+
+        Nothing ->
+            key
 
 
 {-| Translate a value and try different fallback languages by providing a list
@@ -273,9 +285,52 @@ trf : List Translations -> Delims -> String -> Replacements -> String
 trf translationsList delims key replacements =
     case translationsList of
         (Translations translations) :: rest ->
-            Dict.get key translations
-                |> Maybe.map (replacePlaceholders replacements delims)
-                |> Maybe.withDefault (trf rest delims key replacements)
+            case Dict.get key translations of
+                Just str ->
+                    replacePlaceholders replacements delims str
+
+                Nothing ->
+                    trf rest delims key replacements
 
         [] ->
             key
+
+
+{-| Represents the leaf of a translations tree. It holds the actual translation
+string.
+-}
+string : String -> Tree
+string =
+    Leaf
+
+
+{-| Let's you arange your translations in a hierarchy of objects.
+-}
+object : List ( String, Tree ) -> Tree
+object =
+    Dict.fromList >> Branch
+
+
+{-| Create a [`Translations`](I18Next#Translations) value from a list of pairs.
+
+    import I18Next exposing (string, object, fromTree, t)
+
+    translations =
+        fromTree
+          [ ("custom"
+            , object
+                [ ( "morning", string "Morning" )
+                , ( "evening", string "Evening" )
+                , ( "afternoon", string "Afternoon" )
+                ]
+            )
+          , ("hello", string "hello")
+          ]
+
+    -- use it like this
+    t translations "custom.morning" -- "Morning"
+
+-}
+fromTree : List ( String, Tree ) -> Translations
+fromTree =
+    Dict.fromList >> flattenTranslations >> Translations

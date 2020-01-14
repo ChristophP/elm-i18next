@@ -1,6 +1,7 @@
-module Tests exposing (all)
+module Tests exposing (..)
 
 import Expect
+import Fuzz
 import I18Next
     exposing
         ( Delims(..)
@@ -88,18 +89,6 @@ invalidReplacements =
     ]
 
 
-all : Test
-all =
-    describe "The I18Next Module"
-        [ decode
-        , translate
-        , translateWithPlaceholders
-        , translateWithFallback
-        , translateWithPlaceholdersAndFallback
-        , inspecting
-        ]
-
-
 decode : Test
 decode =
     describe "translationsDecoder"
@@ -114,6 +103,14 @@ decode =
         , test "fails if it gets an invalid translations JSON" <|
             \() ->
                 case Decode.decodeString translationsDecoder invalidTranslationJson of
+                    Ok _ ->
+                        Expect.fail "Decoding passed but should have failed."
+
+                    Err err ->
+                        Expect.pass
+        , test "fails when the JSON is a string and not an object" <|
+            \() ->
+                case Decode.decodeString translationsDecoder "\"String\"" of
                     Ok _ ->
                         Expect.fail "Decoding passed but should have failed."
 
@@ -226,4 +223,29 @@ inspecting =
                     hasKey translationsDe "some.key.that.doesnt.exist"
                         |> Expect.false "key should not be contained but is"
             ]
+        ]
+
+
+customTranslations : Test
+customTranslations =
+    describe "custom translations"
+        [ fuzz Fuzz.string "can build working translations with a string" <|
+            \str ->
+                let
+                    translations =
+                        I18Next.fromTree [ ( "test", I18Next.string str ) ]
+                in
+                t translations "test" |> Expect.equal str
+        , fuzz Fuzz.string "can build working translations with an object" <|
+            \str ->
+                let
+                    translations =
+                        I18Next.fromTree
+                            [ ( "obj"
+                              , I18Next.object
+                                    [ ( "test", I18Next.string str ) ]
+                              )
+                            ]
+                in
+                t translations "obj.test" |> Expect.equal str
         ]
