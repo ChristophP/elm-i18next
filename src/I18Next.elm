@@ -3,7 +3,7 @@ module I18Next exposing
     , translationsDecoder
     , t, tr, tf, trf
     , keys, hasKey
-    , Tree, fromTree, object, string
+    , Tree, string, object, fromTree
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -41,12 +41,25 @@ translations.
 
 @docs keys, hasKey
 
+
+## Custom Building Translations
+
+Most of the time you'll load your translations as JSON form a server, but there
+may be times, when you want to build translations in your code. The following
+functions let you build a `Translations` value programmatically.
+
+@docs Tree, string, object, fromTree
+
 -}
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 
 
+{-| A type representing a hierarchy of nested translations. You'll only ever
+deal with this type directly, if you're using
+[`string`](I18Next#string) and [`object`](I18Next#object).
+-}
 type Tree
     = Branch (Dict String Tree)
     | Leaf String
@@ -105,7 +118,7 @@ hasKey (Translations dict) key =
 
 
 {-| Decode a JSON translations file. The JSON can be arbitrarly nested, but the
-leaf values can only be strings. Use this decoder directly if you are passing
+leaf values can only be strings. Use this decoder directly, if you are passing
 the translations JSON into your elm app via flags or ports.
 After decoding nested values will be available with any of the translate
 functions separated with dots.
@@ -283,21 +296,40 @@ trf translationsList delims key replacements =
             key
 
 
-{-| TODO
+{-| Represents the leaf of a translations tree. It holds the actual translation
+string.
 -}
 string : String -> Tree
 string =
     Leaf
 
 
-{-| TODO
+{-| Let's you arange your translations in a hierarchy of objects.
 -}
 object : List ( String, Tree ) -> Tree
 object =
     Dict.fromList >> Branch
 
 
-{-| TODO
+{-| Create a [`Translations`](I18Next#Translations) value from a list of pairs.
+
+    import I18Next exposing (string, object, fromTree, t)
+
+    translations =
+        fromTree
+          [ ("custom"
+            , object
+                [ ( "morning", string "Morning" )
+                , ( "evening", string "Evening" )
+                , ( "afternoon", string "Afternoon" )
+                ]
+            )
+          , ("hello", string "hello")
+          ]
+
+    -- use it like this
+    t translations "custom.morning" -- "Morning"
+
 -}
 fromTree : List ( String, Tree ) -> Translations
 fromTree =
