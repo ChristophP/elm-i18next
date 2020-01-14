@@ -148,11 +148,11 @@ treeDecoder =
 
 flattenTranslations : Dict String Tree -> Dict String String
 flattenTranslations dict =
-    foldTree Dict.empty "" dict
+    flattenTranslationsHelp Dict.empty "" dict
 
 
-foldTree : Dict String String -> String -> Dict String Tree -> Dict String String
-foldTree initialValue namespace dict =
+flattenTranslationsHelp : Dict String String -> String -> Dict String Tree -> Dict String String
+flattenTranslationsHelp initialValue namespace dict =
     Dict.foldl
         (\key val acc ->
             let
@@ -168,7 +168,7 @@ foldTree initialValue namespace dict =
                     Dict.insert (newNamespace key) str acc
 
                 Branch children ->
-                    foldTree acc (newNamespace key) children
+                    flattenTranslationsHelp acc (newNamespace key) children
         )
         initialValue
         dict
@@ -227,9 +227,12 @@ Use this when you need to replace placeholders.
 -}
 tr : Translations -> Delims -> String -> Replacements -> String
 tr (Translations translations) delims key replacements =
-    Dict.get key translations
-        |> Maybe.map (replacePlaceholders replacements delims)
-        |> Maybe.withDefault key
+    case Dict.get key translations of
+        Just str ->
+            replacePlaceholders replacements delims str
+
+        Nothing ->
+            key
 
 
 {-| Translate a value and try different fallback languages by providing a list
@@ -269,9 +272,12 @@ trf : List Translations -> Delims -> String -> Replacements -> String
 trf translationsList delims key replacements =
     case translationsList of
         (Translations translations) :: rest ->
-            Dict.get key translations
-                |> Maybe.map (replacePlaceholders replacements delims)
-                |> Maybe.withDefault (trf rest delims key replacements)
+            case Dict.get key translations of
+                Just str ->
+                    replacePlaceholders replacements delims str
+
+                Nothing ->
+                    trf rest delims key replacements
 
         [] ->
             key
@@ -294,5 +300,5 @@ object =
 {-| TODO
 -}
 fromTree : List ( String, Tree ) -> Translations
-fromTree list =
-    Translations (flattenTranslations (Dict.fromList list))
+fromTree =
+    Dict.fromList >> flattenTranslations >> Translations
