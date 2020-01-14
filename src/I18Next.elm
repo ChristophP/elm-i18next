@@ -144,8 +144,12 @@ treeDecoder =
         ]
 
 
-foldTree : Dict String String -> Dict String Tree -> String -> Dict String String
-foldTree initialValue dict namespace =
+foldTree : Dict String Tree -> Dict String String
+foldTree dict =
+  foldTreeHelp Dict.empty "" dict
+
+foldTreeHelp : Dict String String  -> String -> Dict String Tree -> Dict String String
+foldTreeHelp initialValue namespace dict =
     Dict.foldl
         (\key val acc ->
             let
@@ -161,7 +165,7 @@ foldTree initialValue dict namespace =
                     Dict.insert (newNamespace key) str acc
 
                 Branch children ->
-                    foldTree acc children (newNamespace key)
+                    foldTreeHelp acc (newNamespace key) children
         )
         initialValue
         dict
@@ -171,8 +175,8 @@ mapTreeToDict : Tree -> Translations
 mapTreeToDict tree =
     case tree of
         Branch dict ->
-            foldTree Dict.empty dict ""
-                |> Translations
+           Translations (foldTree dict)
+
 
         _ ->
             initialTranslations
