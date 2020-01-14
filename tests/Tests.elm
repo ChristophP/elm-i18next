@@ -108,6 +108,14 @@ decode =
 
                     Err err ->
                         Expect.pass
+        , test "fails when the JSON is a string and not an object" <|
+            \() ->
+                case Decode.decodeString translationsDecoder "\"String\"" of
+                    Ok _ ->
+                        Expect.fail "Decoding passed but should have failed."
+
+                    Err err ->
+                        Expect.pass
         ]
 
 

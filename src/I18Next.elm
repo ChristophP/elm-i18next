@@ -133,7 +133,8 @@ functions separated with dots.
 -}
 translationsDecoder : Decoder Translations
 translationsDecoder =
-    Decode.map mapTreeToDict treeDecoder
+    Decode.dict treeDecoder
+        |> Decode.map (foldTree >> Translations)
 
 
 treeDecoder : Decoder Tree
@@ -171,16 +172,6 @@ foldTreeHelp initialValue namespace dict =
         )
         initialValue
         dict
-
-
-mapTreeToDict : Tree -> Translations
-mapTreeToDict tree =
-    case tree of
-        Branch dict ->
-            Translations (foldTree dict)
-
-        _ ->
-            initialTranslations
 
 
 {-| Translate a value at a given string.
