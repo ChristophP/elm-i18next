@@ -229,14 +229,14 @@ inspecting =
 customTranslations : Test
 customTranslations =
     describe "custom translations"
-        [ fuzz Fuzz.string "can build a working translation with a string" <|
+        [ fuzz Fuzz.string "can build working translations with a string" <|
             \str ->
                 let
                     translations =
                         I18Next.fromTree [ ( "test", I18Next.string str ) ]
                 in
                 t translations "test" |> Expect.equal str
-        , fuzz Fuzz.string "can build a working translation with an object" <|
+        , fuzz Fuzz.string "can build working translations with an object" <|
             \str ->
                 let
                     translations =
