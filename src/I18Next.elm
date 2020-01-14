@@ -3,8 +3,7 @@ module I18Next exposing
     , translationsDecoder
     , t, tr, tf, trf
     , keys, hasKey
-    , Tree
-    , string, object, fromTree
+    , Tree, fromTree, object, string
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -148,9 +147,10 @@ treeDecoder =
 
 foldTree : Dict String Tree -> Dict String String
 foldTree dict =
-  foldTreeHelp Dict.empty "" dict
+    foldTreeHelp Dict.empty "" dict
 
-foldTreeHelp : Dict String String  -> String -> Dict String Tree -> Dict String String
+
+foldTreeHelp : Dict String String -> String -> Dict String Tree -> Dict String String
 foldTreeHelp initialValue namespace dict =
     Dict.foldl
         (\key val acc ->
@@ -177,8 +177,7 @@ mapTreeToDict : Tree -> Translations
 mapTreeToDict tree =
     case tree of
         Branch dict ->
-           Translations (foldTree dict)
-
+            Translations (foldTree dict)
 
         _ ->
             initialTranslations
@@ -287,14 +286,22 @@ trf translationsList delims key replacements =
             key
 
 
-{-| TODO -}
+{-| TODO
+-}
 string : String -> Tree
-string = Leaf
+string =
+    Leaf
 
-{-| TODO -}
-object : List (String, Tree) -> Tree
-object = Dict.fromList >> Branch
 
-{-| TODO -}
-fromTree : List (String, Tree) -> Translations
-fromTree list = Translations (foldTree (Dict.fromList list))
+{-| TODO
+-}
+object : List ( String, Tree ) -> Tree
+object =
+    Dict.fromList >> Branch
+
+
+{-| TODO
+-}
+fromTree : List ( String, Tree ) -> Translations
+fromTree list =
+    Translations (foldTree (Dict.fromList list))
