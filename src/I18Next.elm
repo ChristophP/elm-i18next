@@ -44,7 +44,7 @@ translations.
 
 ## Custom Building Translations
 
-Most of the time you'll load your translations as JSON form a server, but there
+Most of the time you'll load your translations as JSON from a server, but there
 may be times, when you want to build translations in your code. The following
 functions let you build a `Translations` value programmatically.
 
