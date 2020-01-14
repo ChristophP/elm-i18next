@@ -160,8 +160,8 @@ treeDecoder =
 
 
 flattenTranslations : Dict String Tree -> Dict String String
-flattenTranslations dict =
-    flattenTranslationsHelp Dict.empty "" dict
+flattenTranslations =
+    flattenTranslationsHelp Dict.empty ""
 
 
 flattenTranslationsHelp : Dict String String -> String -> Dict String Tree -> Dict String String
