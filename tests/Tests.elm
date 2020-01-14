@@ -1,6 +1,7 @@
-module Tests exposing (all)
+module Tests exposing (..)
 
 import Expect
+import Fuzz
 import I18Next
     exposing
         ( Delims(..)
@@ -86,18 +87,6 @@ invalidReplacements =
     [ ( "nonExstingPlaceholder", "Peter" )
     , ( "nonExstingPlaceholder", "Griffin" )
     ]
-
-
-all : Test
-all =
-    describe "The I18Next Module"
-        [ decode
-        , translate
-        , translateWithPlaceholders
-        , translateWithFallback
-        , translateWithPlaceholdersAndFallback
-        , inspecting
-        ]
 
 
 decode : Test
@@ -227,3 +216,15 @@ inspecting =
                         |> Expect.false "key should not be contained but is"
             ]
         ]
+
+
+customTranslations : Test
+customTranslations =
+  describe "custom translations" [
+    fuzz Fuzz.string "can build a working translation with a string" <| \str ->
+      let translations = I18Next.fromTree [("test", I18Next.string str)]
+      in t translations "test" |> Expect.equal str
+    , fuzz Fuzz.string "can build a working translation with an object" <| \str ->
+      let translations = I18Next.fromTree [("obj", I18Next.object [("test", I18Next.string str)])]
+      in t translations "obj.test" |> Expect.equal str
+  ]

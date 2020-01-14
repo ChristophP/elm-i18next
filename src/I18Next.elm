@@ -3,6 +3,8 @@ module I18Next exposing
     , translationsDecoder
     , t, tr, tf, trf
     , keys, hasKey
+    , Tree
+    , string, object, fromTree
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -197,7 +199,7 @@ t (Translations translations) key =
 
 
 replacePlaceholders : Replacements -> Delims -> String -> String
-replacePlaceholders replacements delims string =
+replacePlaceholders replacements delims str =
     let
         ( start, end ) =
             delimsToTuple delims
@@ -206,7 +208,7 @@ replacePlaceholders replacements delims string =
         (\( key, value ) acc ->
             String.replace (start ++ key ++ end) value acc
         )
-        string
+        str
         replacements
 
 
@@ -283,3 +285,16 @@ trf translationsList delims key replacements =
 
         [] ->
             key
+
+
+{-| TODO -}
+string : String -> Tree
+string = Leaf
+
+{-| TODO -}
+object : List (String, Tree) -> Tree
+object = Dict.fromList >> Branch
+
+{-| TODO -}
+fromTree : List (String, Tree) -> Translations
+fromTree list = Translations (foldTree (Dict.fromList list))
