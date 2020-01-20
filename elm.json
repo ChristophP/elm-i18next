@@ -3,7 +3,7 @@
     "name": "ChristophP/elm-i18next",
     "summary": "A module to load, decode and use translations in your app",
     "license": "BSD-3-Clause",
-    "version": "4.1.0",
+    "version": "4.1.1",
     "exposed-modules": [
         "I18Next"
     ],
