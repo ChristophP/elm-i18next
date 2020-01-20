@@ -15,7 +15,7 @@ In JS do:
 Elm.Main.init({ flags: translations });
 ```
 
-Then in elm, you use them in the init function of your app:
+Then in elm, you use them in the `init` function of your app:
 
 ```elm
 import Html exposing (Html)
@@ -35,9 +35,9 @@ type alias Model = {
 
 type Msg = ..
 
-init: Json.Encode.Value -> (Model, Cmd msg)
-init flags = ({ translations = initialTranslations } , Cmd.none)
-    case JD.decodeValue translationsDecoder flags of
+init : Json.Encode.Value -> (Model, Cmd msg)
+init flags =
+    case Json.Decode.decodeValue translationsDecoder flags of
         Ok translations ->
             ( Model translations, Cmd.none )
 
@@ -46,9 +46,9 @@ init flags = ({ translations = initialTranslations } , Cmd.none)
 
 {- Imagine your translations file looks like this:
   {
-    "hallo": "Hallo",
+    "hello": "Hallo",
     "greetings": {
-      "goodDay": "Good Day.",
+      "goodDay": "Good day.",
       "greetName": "Hi {{name}}"
     }
   }
@@ -58,7 +58,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ div [] [ text (t model.translations "hello") ] -- "Hallo"
-        ,  div [] [ text (t model.translations "greetings.goodDay") ] -- "Good day."
+        , div [] [ text (t model.translations "greetings.goodDay") ] -- "Good day."
         , div [] [ text (t model.translations "nonExistingKey") ] -- "nonExistingKey"
         , div [] [ text (tr model.translations Curly "greetings.greetName" [("name", "Peter")]) ] -- "Hi Peter"
         ]
