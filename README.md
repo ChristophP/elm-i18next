@@ -66,16 +66,22 @@ view model =
 
 Check out more complete examples [here](https://github.com/ChristophP/elm-i18next/tree/master/examples)
 
-### Fetching Translations
+## Fetching Translations
 
 If you can't pass the translations as flags but want to fetch them from Elm code
 instead do the same as in the simple example but apply the decoder to the Http call.
 
-### Advanced Stuff: Placeholders and fallback languages
+## Advanced Stuff: Placeholders and fallback languages
 
 There is also support for placeholders and fallback languages. Check the
 official [docs](http://package.elm-lang.org/packages/ChristophP/elm-i18next/latest/I18Next)
 for usage examples.
+
+## Adding Type safety
+
+If you want to add type safety for your translations, try this awesome generator
+called [`elm-i18next-gen`](https://github.com/yonigibbs/elm-i18next-gen).
+It combines the dynamic nature of loading JSON files with the power of Elm's type system.
 
 ## Background
 
