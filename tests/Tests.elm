@@ -7,6 +7,7 @@ import I18Next
         ( Delims(..)
         , Replacements
         , Translations
+        , customTr
         , hasKey
         , initialTranslations
         , keys
@@ -150,6 +151,29 @@ translateWithPlaceholders =
         ]
 
 
+type PseudoHTML
+    = Text String
+    | Link String
+
+
+translateWithCustomizedReturnType : Test
+translateWithCustomizedReturnType =
+    describe "the customTr function"
+        [ test "translates and replaces placeholders" <|
+            \_ ->
+                customTr Text translationsEn Curly "greetings.goodDay" [ ( "firstName", Link "Test" ), ( "lastName", Link "Max" ) ]
+                    |> Expect.equal [ Text "Good Day ", Link "Test", Text " ", Link "Max", Text "" ]
+        , test "tr does not replace if the match can't be found" <|
+            \_ ->
+                customTr Text translationsEn Curly "greetings.goodDay" [ ( "lastName", Link "Max" ) ]
+                    |> Expect.equal [ Text "Good Day {{firstName}} ", Link "Max", Text "" ]
+        , test "tr returns the key if it doesn not exists" <|
+            \() ->
+                customTr Text translationsEn Curly "some.non-existing.key" []
+                    |> Expect.equal [ Text "some.non-existing.key" ]
+        ]
+
+
 translateWithFallback : Test
 translateWithFallback =
     describe "the tf function"
@@ -165,21 +189,6 @@ translateWithFallback =
             \() ->
                 tf langList "some.non-existing.key"
                     |> Expect.equal "some.non-existing.key"
-        ]
-
-
-type PseudoHTML
-    = Text String
-    | Link String
-
-
-parse : Test
-parse =
-    describe "customTr"
-        [ test "basic" <|
-            \_ ->
-                I18Next.customTr Text translationsEn Curly "greetings.goodDay" [ ( "firstName", Link "Test" ), ( "lastName", Link "Max" ) ]
-                    |> Expect.equal [ Text "Good Day ", Link "Test", Text " ", Link "Max", Text "" ]
         ]
 
 
