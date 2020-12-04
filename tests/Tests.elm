@@ -168,6 +168,21 @@ translateWithFallback =
         ]
 
 
+type PseudoHTML
+    = Text String
+    | Link String
+
+
+parse : Test
+parse =
+    describe "customTr"
+        [ test "basic" <|
+            \_ ->
+                I18Next.customTr Text translationsEn Curly "greetings.goodDay" [ ( "firstName", Link "Test" ), ( "lastName", Link "Max" ) ]
+                    |> Expect.equal [ Text "Good Day ", Link "Test", Text " ", Link "Max", Text "" ]
+        ]
+
+
 translateWithPlaceholdersAndFallback : Test
 translateWithPlaceholdersAndFallback =
     describe "the trf function"
