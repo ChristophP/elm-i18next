@@ -168,6 +168,46 @@ translateWithCustomizedReturnType =
             \_ ->
                 customTr Text translationsEn Curly "greetings.goodDay" [ ( "lastName", Link "Max" ) ]
                     |> Expect.equal [ Text "Good Day {{firstName}} ", Link "Max", Text "" ]
+        , test "can handle malformed nested inner placeholders" <|
+            \_ ->
+                let
+                    malformedTranslations =
+                        I18Next.fromTree [ ( "test", I18Next.string "pre __weird __stuff__ __ suff" ) ]
+                in
+                customTr Text malformedTranslations Underscore "test" [ ( "stuff", Link "Max" ) ]
+                    |> Expect.equal [ Text "pre __weird ", Link "Max", Text " __ suff" ]
+        , test "can handle malformed nested outer placeholders" <|
+            \_ ->
+                let
+                    malformedTranslations =
+                        I18Next.fromTree [ ( "test", I18Next.string "pre __weird __stuff__ __ suff" ) ]
+                in
+                customTr Text malformedTranslations Underscore "test" [ ( "weird __stuff__ ", Link "Max" ) ]
+                    |> Expect.equal [ Text "pre ", Link "Max", Text " suff" ]
+        , test "can handle malformed replacement, that looks like a placeholder" <|
+            \_ ->
+                let
+                    malformedTranslations =
+                        I18Next.fromTree [ ( "test", I18Next.string "pre __placeholder__ suff" ) ]
+                in
+                customTr Text malformedTranslations Underscore "test" [ ( "__placeholder__", Text "__placeholder__" ) ]
+                    |> Expect.equal [ Text "pre __placeholder__ suff" ]
+        , Test.fuzz3 Fuzz.string (Fuzz.tuple ( Fuzz.string, Fuzz.string )) Fuzz.string "can replace an arbitrary  placeholder" <|
+            \pre ( placeholder, replacement ) post ->
+                let
+                    arbitraryTranslation =
+                        I18Next.fromTree [ ( "test", I18Next.string <| pre ++ "__" ++ placeholder ++ "__" ++ post ) ]
+                in
+                customTr Text arbitraryTranslation Underscore "test" [ ( placeholder, Link replacement ) ]
+                    |> Expect.equal [ Text pre, Link replacement, Text post ]
+        , test "can handle multiple occurences" <|
+            \_ ->
+                let
+                    multipleOccurences =
+                        I18Next.fromTree [ ( "test", I18Next.string "pre __placeholder1__ a __placeholder2__ b __placeholder1__ c __placeholder2__ suff" ) ]
+                in
+                customTr Text multipleOccurences Underscore "test" [ ( "placeholder1", Link "Max" ), ( "placeholder2", Link "Pattern" ) ]
+                    |> Expect.equal [ Text "pre ", Link "Max", Text " a ", Link "Pattern", Text " b ", Link "Max", Text " c ", Link "Pattern", Text " suff" ]
         , test "tr returns the key if it doesn not exists" <|
             \() ->
                 customTr Text translationsEn Curly "some.non-existing.key" []
@@ -198,6 +238,10 @@ translateWithPlaceholdersAndFallbackAndCustomizedReturnType =
             \() ->
                 customTrf Text langList Curly "englishOnlyPlaceholder" [ ( "firstName", Link "Peter" ), ( "lastName", Link "Griffin" ) ]
                     |> Expect.equal [ Text "Only english with ", Link "Peter", Text " ", Link "Griffin", Text "" ]
+        , test "does not replace if the match can't be found" <|
+            \_ ->
+                customTrf Text langList Curly "greetings.goodDay" [ ( "lastName", Link "Max" ) ]
+                    |> Expect.equal [ Text "Guten Tag {{firstName}} ", Link "Max", Text "" ]
         ]
 
 

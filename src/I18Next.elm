@@ -257,6 +257,7 @@ customReplace lift getTranslations delims translationKey replacements =
                     delimsToTuple delims
 
                 -- finds occurences for `Text "pre {{key}} suf {{other}}"`  and replaces them with `[Text "pre ", Placeholder "key", Text " suf {{other}}"]`
+                parseSinglePlaceholderKey : String -> Translation -> List Translation
                 parseSinglePlaceholderKey key translationElement =
                     case translationElement of
                         Text rawText ->
