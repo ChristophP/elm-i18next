@@ -1,5 +1,6 @@
 module I18Next exposing
-    ( Translations, Delims(..), Replacements, initialTranslations
+    ( Translations, Delims(..), Replacements, CustomReplacements
+    , initialTranslations
     , translationsDecoder
     , t, tr, tf, trf
     , keys, hasKey
@@ -15,7 +16,7 @@ needed.
 
 ## Types and Data
 
-@docs Translations, Delims, Replacements, initialTranslations
+@docs Translations, Delims, Replacements, CustomReplacements, initialTranslations
 
 
 ## Decoding
@@ -30,7 +31,7 @@ Turn your JSON into translations.
 Get translated values by key straight away, with replacements, fallback languages
 or both.
 
-@docs t, tr, tf, trf
+@docs t, tr, tf, trf, customTr, customTrf
 
 
 ## Inspecting
@@ -43,7 +44,7 @@ translations.
 @docs keys, hasKey
 
 
-## Custom Building Translations
+## Creating Translations Programmatically
 
 Most of the time you'll load your translations as JSON from a server, but there
 may be times, when you want to build translations in your code. The following
@@ -229,20 +230,40 @@ delimsToTuple delims =
             tuple
 
 
+{-| CustomReplacements if you want to replace placeholders with other things
+than strings. The tuples should
+contain the name of the placeholder as the first value and the value for
+the placeholder as the second entry. It can be anything, for example `Html`. See [`customTf`](I18Next#customTr) and
+[`customTrf`](I18Next#customTrf) for usage examples.
+-}
 type alias CustomReplacements a =
     List ( String, a )
 
 
-type Translation
+type TranslationPiece
     = Text String
     | Placeholder String
 
 
 type CustomTranslationElement a
     = Converted a
-    | Unconverted Translation
+    | Unconverted TranslationPiece
 
 
+{-| Sometimes it can be useful to replace placeholders with other things than just `String`s.
+Imagine you have translations containing a sentence with a link and you want to
+provide the proper markup.
+
+    {- If your translations are { "call-to-action": "Go to {{elm-website}} for more information." }
+    ...
+    -}
+    import Html exposing (text, a)
+
+    customTr text translationsEn Curly "call-to-action" [ ( "elm-website", a [href "https://elm-lang.org"] [text "https://elm-lang.org"] ) ]
+    -- Go to <a href="https://elm-lang.org">https://elm-lang.org</a> for more information.
+
+If you only want `String`s though, use [`tr`](I18Next#tr) instead.
+-}
 customTr : (String -> a) -> Translations -> Delims -> String -> CustomReplacements a -> List a
 customTr lift (Translations translations) =
     customReplace lift <| \translationKey -> Dict.get translationKey translations
@@ -257,7 +278,7 @@ customReplace lift getTranslations delims translationKey replacements =
                     delimsToTuple delims
 
                 -- finds occurences for `Text "pre {{key}} suf {{other}}"`  and replaces them with `[Text "pre ", Placeholder "key", Text " suf {{other}}"]`
-                parseSinglePlaceholderKey : String -> Translation -> List Translation
+                parseSinglePlaceholderKey : String -> TranslationPiece -> List TranslationPiece
                 parseSinglePlaceholderKey key translationElement =
                     case translationElement of
                         Text rawText ->
@@ -271,7 +292,7 @@ customReplace lift getTranslations delims translationKey replacements =
 
                 -- for rawString "Hello {{firstName}} {{lastName}}!",
                 -- parsedTranslation is [Text "Hello ", Placeholder "fistName", Placeholder "lastName"]
-                parsedTranslation : List Translation
+                parsedTranslation : List TranslationPiece
                 parsedTranslation =
                     List.foldl
                         (\( key, _ ) acc ->
@@ -315,6 +336,8 @@ customReplace lift getTranslations delims translationKey replacements =
             [ lift translationKey ]
 
 
+{-| Like [`customTr`](I18Next#customTr) but with support for fallback languages.
+-}
 customTrf : (String -> a) -> List Translations -> Delims -> String -> CustomReplacements a -> List a
 customTrf lift translationsList =
     customReplace lift <|
