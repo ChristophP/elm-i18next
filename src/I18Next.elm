@@ -4,6 +4,7 @@ module I18Next exposing
     , t, tr, tf, trf
     , keys, hasKey
     , Tree, fromTree, string, object
+    , customTr, customTrf
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -226,6 +227,107 @@ delimsToTuple delims =
 
         Custom tuple ->
             tuple
+
+
+type alias CustomReplacements a =
+    List ( String, a )
+
+
+type Translation
+    = Text String
+    | Placeholder String
+
+
+type CustomTranslationElement a
+    = Converted a
+    | Unconverted Translation
+
+
+customTr : (String -> a) -> Translations -> Delims -> String -> CustomReplacements a -> List a
+customTr lift (Translations translations) =
+    customReplace lift <| \translationKey -> Dict.get translationKey translations
+
+
+customReplace : (String -> a) -> (String -> Maybe String) -> Delims -> String -> CustomReplacements a -> List a
+customReplace lift getTranslations delims translationKey replacements =
+    case getTranslations translationKey of
+        Just rawString ->
+            let
+                ( start, end ) =
+                    delimsToTuple delims
+
+                -- finds occurences for `Text "pre {{key}} suf {{other}}"`  and replaces them with `[Text "pre ", Placeholder "key", Text " suf {{other}}"]`
+                parseSinglePlaceholderKey : String -> Translation -> List Translation
+                parseSinglePlaceholderKey key translationElement =
+                    case translationElement of
+                        Text rawText ->
+                            rawText
+                                |> String.split (start ++ key ++ end)
+                                |> List.map Text
+                                |> List.intersperse (Placeholder key)
+
+                        Placeholder name ->
+                            [ Placeholder name ]
+
+                -- for rawString "Hello {{firstName}} {{lastName}}!",
+                -- parsedTranslation is [Text "Hello ", Placeholder "fistName", Placeholder "lastName"]
+                parsedTranslation : List Translation
+                parsedTranslation =
+                    List.foldl
+                        (\( key, _ ) acc ->
+                            List.concatMap (parseSinglePlaceholderKey key) acc
+                        )
+                        [ Text rawString ]
+                        replacements
+
+                -- given a list of translations, placeholderReplacers will replace all unconverted placeholders with
+                -- the custom replacements given by `replacements`
+                placeholderReplacers =
+                    List.map
+                        (\( key, value ) translationElement ->
+                            if Unconverted (Placeholder key) == translationElement then
+                                Converted value
+
+                            else
+                                translationElement
+                        )
+                        replacements
+            in
+            parsedTranslation
+                |> List.map Unconverted
+                |> (\list -> List.foldr List.map list placeholderReplacers)
+                |> List.map
+                    (\value ->
+                        case value of
+                            Converted converted ->
+                                converted
+
+                            Unconverted (Text text) ->
+                                lift text
+
+                            Unconverted (Placeholder name) ->
+                                -- this means, that there is a placeholder in the translation text,
+                                -- that we could not find a replacement for. We default to the name in that case
+                                lift name
+                    )
+
+        Nothing ->
+            [ lift translationKey ]
+
+
+customTrf : (String -> a) -> List Translations -> Delims -> String -> CustomReplacements a -> List a
+customTrf lift translationsList =
+    customReplace lift <|
+        \translationsKey ->
+            let
+                getByKey (Translations translations) =
+                    Dict.get translationsKey translations
+            in
+            translationsList
+                |> List.filterMap getByKey
+                |> List.head
+                |> Maybe.withDefault translationsKey
+                |> Just
 
 
 {-| Translate a value at a key, while replacing placeholders.
