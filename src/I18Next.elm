@@ -4,7 +4,7 @@ module I18Next exposing
     , t, tr, tf, trf
     , keys, hasKey
     , Tree, fromTree, string, object
-    , customTr
+    , customTr, customTrf
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -244,14 +244,19 @@ type CustomTranslationElement a
 
 
 customTr : (String -> a) -> Translations -> Delims -> String -> CustomReplacements a -> List a
-customTr lift (Translations transltions) delims translationKey replacements =
-    case Dict.get translationKey transltions of
+customTr lift (Translations translations) =
+    customReplace lift <| \translationKey -> Dict.get translationKey translations
+
+
+customReplace : (String -> a) -> (String -> Maybe String) -> Delims -> String -> CustomReplacements a -> List a
+customReplace lift getTranslations delims translationKey replacements =
+    case getTranslations translationKey of
         Just rawString ->
             let
                 ( start, end ) =
                     delimsToTuple delims
 
-                -- finds occurences for `Text "pre {{key}} suf"`  and replaces them with `[Text "pre ", Placeholder "key", Text " suf"]`
+                -- finds occurences for `Text "pre {{key}} suf {{other}}"`  and replaces them with `[Text "pre ", Placeholder "key", Text " suf {{other}}"]`
                 parseSinglePlaceholderKey key translationElement =
                     case translationElement of
                         Text rawText ->
@@ -307,6 +312,21 @@ customTr lift (Translations transltions) delims translationKey replacements =
 
         Nothing ->
             [ lift translationKey ]
+
+
+customTrf : (String -> a) -> List Translations -> Delims -> String -> CustomReplacements a -> List a
+customTrf lift translationsList =
+    customReplace lift <|
+        \translationsKey ->
+            let
+                getByKey (Translations translations) =
+                    Dict.get translationsKey translations
+            in
+            translationsList
+                |> List.filterMap getByKey
+                |> List.head
+                |> Maybe.withDefault translationsKey
+                |> Just
 
 
 {-| Translate a value at a key, while replacing placeholders.

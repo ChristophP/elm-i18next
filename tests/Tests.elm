@@ -8,6 +8,7 @@ import I18Next
         , Replacements
         , Translations
         , customTr
+        , customTrf
         , hasKey
         , initialTranslations
         , keys
@@ -171,6 +172,32 @@ translateWithCustomizedReturnType =
             \() ->
                 customTr Text translationsEn Curly "some.non-existing.key" []
                     |> Expect.equal [ Text "some.non-existing.key" ]
+        ]
+
+
+translateWithPlaceholdersAndFallbackAndCustomizedReturnType : Test
+translateWithPlaceholdersAndFallbackAndCustomizedReturnType =
+    describe "the customTrf function"
+        [ test "uses the german when the key exists" <|
+            \() ->
+                customTrf Text langList Curly "greetings.hello" []
+                    |> Expect.equal [ Text "Hallo" ]
+        , test "uses english as a fallback" <|
+            \() ->
+                customTrf Text langList Curly "englishOnly" []
+                    |> Expect.equal [ Text "This key only exists in english" ]
+        , test "uses the key if none is found" <|
+            \() ->
+                customTrf Text langList Curly "some.non-existing.key" []
+                    |> Expect.equal [ Text "some.non-existing.key" ]
+        , test "translates and replaces in german when key is found" <|
+            \() ->
+                customTrf Text langList Curly "greetings.goodDay" [ ( "firstName", Link "Peter" ), ( "lastName", Link "Griffin" ) ]
+                    |> Expect.equal [ Text "Guten Tag ", Link "Peter", Text " ", Link "Griffin", Text "" ]
+        , test "translates and replaces in fallback when key is not found" <|
+            \() ->
+                customTrf Text langList Curly "englishOnlyPlaceholder" [ ( "firstName", Link "Peter" ), ( "lastName", Link "Griffin" ) ]
+                    |> Expect.equal [ Text "Only english with ", Link "Peter", Text " ", Link "Griffin", Text "" ]
         ]
 
 
