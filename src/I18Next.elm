@@ -1,11 +1,9 @@
 module I18Next exposing
-    ( Translations, Delims(..), Replacements, CustomReplacements
-    , initialTranslations
+    ( Translations, Delims(..), Replacements, CustomReplacements, initialTranslations
     , translationsDecoder
-    , t, tr, tf, trf
+    , t, tr, tf, trf, customTr, customTrf
     , keys, hasKey
     , Tree, fromTree, string, object
-    , customTr, customTrf
     )
 
 {-| This library provides a solution to load and display translations in your
@@ -259,18 +257,19 @@ provide the proper markup.
     -}
     import Html exposing (text, a)
 
-    customTr text translationsEn Curly "call-to-action" [ ( "elm-website", a [href "https://elm-lang.org"] [text "https://elm-lang.org"] ) ]
+    customTr translationsEn Curly "call-to-action" text [ ( "elm-website", a [href "https://elm-lang.org"] [text "https://elm-lang.org"] ) ]
     -- Go to <a href="https://elm-lang.org">https://elm-lang.org</a> for more information.
 
 If you only want `String`s though, use [`tr`](I18Next#tr) instead.
+
 -}
-customTr : (String -> a) -> Translations -> Delims -> String -> CustomReplacements a -> List a
-customTr lift (Translations translations) =
-    customReplace lift <| \translationKey -> Dict.get translationKey translations
+customTr : Translations -> Delims -> String -> (String -> a) -> CustomReplacements a -> List a
+customTr (Translations translations) =
+    customReplace (\translationKey -> Dict.get translationKey translations)
 
 
-customReplace : (String -> a) -> (String -> Maybe String) -> Delims -> String -> CustomReplacements a -> List a
-customReplace lift getTranslations delims translationKey replacements =
+customReplace : (String -> Maybe String) -> Delims -> String -> (String -> a) -> CustomReplacements a -> List a
+customReplace getTranslations delims translationKey lift replacements =
     case getTranslations translationKey of
         Just rawString ->
             let
@@ -338,10 +337,10 @@ customReplace lift getTranslations delims translationKey replacements =
 
 {-| Like [`customTr`](I18Next#customTr) but with support for fallback languages.
 -}
-customTrf : (String -> a) -> List Translations -> Delims -> String -> CustomReplacements a -> List a
-customTrf lift translationsList =
-    customReplace lift <|
-        \translationsKey ->
+customTrf : List Translations -> Delims -> String -> (String -> a) -> CustomReplacements a -> List a
+customTrf translationsList =
+    customReplace
+        (\translationsKey ->
             let
                 getByKey (Translations translations) =
                     Dict.get translationsKey translations
@@ -351,6 +350,7 @@ customTrf lift translationsList =
                 |> List.head
                 |> Maybe.withDefault translationsKey
                 |> Just
+        )
 
 
 {-| Translate a value at a key, while replacing placeholders.
