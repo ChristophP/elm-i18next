@@ -73,8 +73,13 @@ instead do the same as in the simple example but apply the decoder to the Http c
 
 ## Advanced Stuff: Placeholders and fallback languages
 
-There is also support for placeholders and fallback languages. Check the
-official [docs](http://package.elm-lang.org/packages/ChristophP/elm-i18next/latest/I18Next)
+Here are some supported features for advanced use cases:
+- Support for string placeholders
+- Support for non-string placeholders such as `Html`
+- Fallback languages
+
+Check the officialj
+[docs](http://package.elm-lang.org/packages/ChristophP/elm-i18next/latest/I18Next)
 for usage examples.
 
 ## Adding Type safety

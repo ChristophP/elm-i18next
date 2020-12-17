@@ -251,25 +251,28 @@ type CustomTranslationElement a
 {-| Sometimes it can be useful to replace placeholders with other things than just `String`s.
 Imagine you have translations containing a sentence with a link and you want to
 provide the proper markup.
+_Hint:_ The third argument is a function which will be called for any string pieces that
+AREN'T placeholders, so that the types of replacements and the other other string parts match.
+In most cases you'll just pass `Html.text` here.
 
     {- If your translations are { "call-to-action": "Go to {{elm-website}} for more information." }
     ...
     -}
     import Html exposing (text, a)
 
-    customTr translationsEn Curly "call-to-action" text [ ( "elm-website", a [href "https://elm-lang.org"] [text "https://elm-lang.org"] ) ]
+    customTr translationsEn Curly text "call-to-action" [ ( "elm-website", a [href "https://elm-lang.org"] [text "https://elm-lang.org"] ) ]
     -- Go to <a href="https://elm-lang.org">https://elm-lang.org</a> for more information.
 
 If you only want `String`s though, use [`tr`](I18Next#tr) instead.
 
 -}
-customTr : Translations -> Delims -> String -> (String -> a) -> CustomReplacements a -> List a
+customTr : Translations -> Delims -> (String -> a) -> String -> CustomReplacements a -> List a
 customTr (Translations translations) =
     customReplace (\translationKey -> Dict.get translationKey translations)
 
 
-customReplace : (String -> Maybe String) -> Delims -> String -> (String -> a) -> CustomReplacements a -> List a
-customReplace getTranslations delims translationKey lift replacements =
+customReplace : (String -> Maybe String) -> Delims -> (String -> a) -> String -> CustomReplacements a -> List a
+customReplace getTranslations delims lift translationKey replacements =
     case getTranslations translationKey of
         Just rawString ->
             let
@@ -337,7 +340,7 @@ customReplace getTranslations delims translationKey lift replacements =
 
 {-| Like [`customTr`](I18Next#customTr) but with support for fallback languages.
 -}
-customTrf : List Translations -> Delims -> String -> (String -> a) -> CustomReplacements a -> List a
+customTrf : List Translations -> Delims -> (String -> a) -> String -> CustomReplacements a -> List a
 customTrf translationsList =
     customReplace
         (\translationsKey ->
