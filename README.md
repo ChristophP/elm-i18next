@@ -78,7 +78,7 @@ Here are some supported features for advanced use cases:
 - Support for non-string placeholders such as `Html`
 - Fallback languages
 
-Check the officialj
+Check the official
 [docs](http://package.elm-lang.org/packages/ChristophP/elm-i18next/latest/I18Next)
 for usage examples.
 
